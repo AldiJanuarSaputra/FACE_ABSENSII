@@ -108,5 +108,20 @@ Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini:
 
 ---
 
-*Dibuat dengan ❤️ oleh **Aldi Januar Saputra***
+## 👥 Kelompok / Tim Pengembang
+
+Aplikasi ini dikembangkan oleh Kelompok:
+
+| No | Nama Lengkap | NIM | Peran / Kontribusi |
+| :--- | :--- | :--- | :--- |
+| 1 | **Aldi Januar Saputra** | - | - |
+| 2 | **[Nama Anggota 2]** | - | - |
+| 3 | **[Nama Anggota 3]** | - | - |
+| 4 | **[Nama Anggota 4]** | - | - |
+| 5 | **[Nama Anggota 5]** | - | - |
+| 6 | **[Nama Anggota 6]** | - | - |
+
+---
+
+*Dibuat dengan ❤️ oleh Kelompok kami.*
 
