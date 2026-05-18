@@ -115,7 +115,7 @@ Aplikasi ini dikembangkan oleh Kelompok:
 | No | Nama Lengkap | NIM | Peran / Kontribusi |
 | :--- | :--- | :--- | :--- |
 | 1 | **Aldi Januar Saputra** | - | - |
-| 2 | **[Nama Anggota 2]** | - | - |
+| 2 | **Veve** | - | - |
 | 3 | **[Nama Anggota 3]** | - | - |
 | 4 | **[Nama Anggota 4]** | - | - |
 | 5 | **[Nama Anggota 5]** | - | - |
