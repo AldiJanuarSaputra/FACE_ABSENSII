@@ -1,0 +1,2 @@
+# Abaikan file konfigurasi sensitif (.env) agar tidak terunggah ke GitHub
+.env
