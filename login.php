@@ -361,6 +361,11 @@ h2 {
             <span>Masuk ke Sistem</span>
         </button>
     </form>
+    
+    <div style="margin-top: 20px; font-size: 13px; color: var(--text-secondary);">
+        Belum terdaftar? 
+        <a href="register.php" id="register-link" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: all 0.3s ease; margin-left: 4px;">Daftarkan Wajah (Face ID) Siswa</a>
+    </div>
 </div>
 
 <script>
@@ -368,15 +373,20 @@ function updateLabels(role) {
     const label = document.getElementById('identity-label');
     const icon  = document.getElementById('identity-icon');
     const input = document.getElementById('username_nis');
+    const regLink = document.getElementById('register-link');
 
     if (role === 'siswa') {
         label.textContent = "Nomor Induk Siswa (NIS)";
         icon.className = "fa-solid fa-id-card";
         input.placeholder = "Masukkan NIS Anda...";
+        regLink.href = "register.php";
+        regLink.innerHTML = "Daftarkan Wajah (Face ID) Siswa";
     } else {
         label.textContent = "Username Admin / Guru";
         icon.className = "fa-solid fa-user";
         input.placeholder = "Masukkan username...";
+        regLink.href = "register_admin.php";
+        regLink.innerHTML = "Daftar Akun Admin / Guru Baru";
     }
 }
 </script>

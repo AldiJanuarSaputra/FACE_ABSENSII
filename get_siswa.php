@@ -1,10 +1,5 @@
 <?php
 session_start();
-if (!isset($_SESSION['admin_user']) && !isset($_SESSION['siswa_user'])) {
-    header("Content-Type: application/json");
-    echo json_encode(["error" => "Akses ditolak!"]);
-    exit;
-}
 include "koneksi.php";
 
 header("Content-Type: application/json");

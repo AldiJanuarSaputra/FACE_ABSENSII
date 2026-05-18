@@ -1,9 +1,5 @@
 <?php
 session_start();
-if (!isset($_SESSION['admin_user']) && !isset($_SESSION['siswa_user'])) {
-    header("Location: login.php");
-    exit;
-}
 include "koneksi.php";
 date_default_timezone_set("Asia/Jakarta");
 $hariIni = date("Y-m-d");
