@@ -497,12 +497,7 @@ button:disabled {
         <canvas id="overlay" class="overlay"></canvas>
     </div>
 
-    <div class="btn-row">
-        <button id="btnScan" onclick="scan()" disabled><i class="fa-solid fa-camera-retro"></i>Scan Wajah</button>
-        <a href="register.php" style="flex:1;text-decoration:none;">
-            <button class="btn-reg" type="button" style="width:100%;"><i class="fa-solid fa-user-plus"></i>Daftar Wajah</button>
-        </a>
-    </div>
+    <button id="btnScan" onclick="scan()" disabled style="width: 100%; margin-top: 14px;"><i class="fa-solid fa-camera-retro"></i>Scan Wajah</button>
     <?php if (isset($_SESSION['admin_user'])): ?>
         <a href="index.php" style="text-decoration:none; display: block; width: 100%;">
             <button class="btn-secondary" type="button"><i class="fa-solid fa-arrow-left-long" style="margin-right: 6px;"></i>Kembali ke Menu Admin</button>
