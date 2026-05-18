@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['admin_user'])) {
+    header("Location: login.php");
+    exit;
+}
+$admin = $_SESSION['admin_user'];
 include "koneksi.php";
 
 $pesan = '';
@@ -20,23 +26,36 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
 
 // ── 2. Proses Edit (Update) ───────────────────────────
 if (isset($_POST['action']) && $_POST['action'] === 'update') {
-    $id    = (int)$_POST['id'];
-    $nama  = trim($_POST['nama']);
-    $kelas = trim($_POST['kelas']);
-    $nis   = trim($_POST['nis']);
+    $id       = (int)$_POST['id'];
+    $nama     = trim($_POST['nama']);
+    $kelas    = trim($_POST['kelas']);
+    $nis      = trim($_POST['nis']);
+    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
 
     if (!$nama || !$kelas || !$nis) {
         $pesan = "Semua kolom edit harus diisi!";
         $tipePesan = "err";
     } else {
         try {
-            $stmt = $koneksi->prepare("UPDATE siswa SET nis = :nis, nama = :nama, kelas = :kelas WHERE id = :id");
-            $stmt->execute([
-                ':nis'   => $nis,
-                ':nama'  => $nama,
-                ':kelas' => $kelas,
-                ':id'    => $id
-            ]);
+            if ($password !== '') {
+                $hash = password_hash($password, PASSWORD_BCRYPT);
+                $stmt = $koneksi->prepare("UPDATE siswa SET nis = :nis, nama = :nama, kelas = :kelas, password = :password WHERE id = :id");
+                $stmt->execute([
+                    ':nis'      => $nis,
+                    ':nama'     => $nama,
+                    ':kelas'    => $kelas,
+                    ':password' => $hash,
+                    ':id'       => $id
+                ]);
+            } else {
+                $stmt = $koneksi->prepare("UPDATE siswa SET nis = :nis, nama = :nama, kelas = :kelas WHERE id = :id");
+                $stmt->execute([
+                    ':nis'   => $nis,
+                    ':nama'  => $nama,
+                    ':kelas' => $kelas,
+                    ':id'    => $id
+                ]);
+            }
             $pesan = "Data siswa (NIS: $nis) berhasil diperbarui!";
             $tipePesan = "ok";
         } catch (PDOException $e) {
@@ -614,11 +633,15 @@ tr:hover td {
             </ul>
         </div>
 
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 10px;">
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
                 <i class="fa-solid fa-moon"></i>
                 <span id="themeBtnText">Mode Terang</span>
             </button>
+            <a href="logout.php" class="theme-toggle-btn" style="border-color: rgba(239, 68, 68, 0.15); color: var(--danger); background: rgba(239, 68, 68, 0.05); text-decoration: none;">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Keluar</span>
+            </a>
         </div>
     </aside>
 
@@ -729,6 +752,9 @@ tr:hover td {
 
                 <label for="edit-kelas">Kelas</label>
                 <input type="text" id="edit-kelas" name="kelas" required>
+
+                <label for="edit-password">Password Baru (Kosongkan jika tidak diubah)</label>
+                <input type="password" id="edit-password" name="password" placeholder="Ketik password baru siswa...">
             </div>
 
             <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Simpan Perubahan</button>

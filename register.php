@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['admin_user']) && !isset($_SESSION['siswa_user'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="id" data-theme="dark">
 <head>
@@ -384,7 +391,12 @@ button:disabled {
     <canvas id="canvas" style="display:none;" width="320" height="240"></canvas>
 
     <button id="btnDaftar" onclick="daftar()" disabled><i class="fa-solid fa-cloud-arrow-up"></i>Daftar Sekarang</button>
-    <a href="absensi.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-camera-retro"></i>Ke Halaman Absensi</button></a>
+    <?php if (isset($_SESSION['admin_user'])): ?>
+        <a href="index.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Ke Dasbor Admin</button></a>
+    <?php else: ?>
+        <a href="siswa_dashboard.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Ke Portal Siswa</button></a>
+    <?php endif; ?>
+    <a href="absensi.php" style="text-decoration:none;"><button class="btn-secondary" type="button" style="margin-top: 5px;"><i class="fa-solid fa-camera-retro" style="margin-right: 6px;"></i>Ke Halaman Absensi</button></a>
 
     <p id="hasil" class="info">Memuat sistem...</p>
 </div>

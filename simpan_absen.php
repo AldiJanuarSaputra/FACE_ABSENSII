@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['admin_user']) && !isset($_SESSION['siswa_user'])) {
+    header("Content-Type: application/json");
+    echo json_encode(["sukses" => false, "pesan" => "Akses tidak sah! Silakan login terlebih dahulu."]);
+    exit;
+}
 include "koneksi.php";
 
 // Set timezone ke Waktu Indonesia Barat (WIB) agar jam sinkron

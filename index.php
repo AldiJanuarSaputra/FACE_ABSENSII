@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['admin_user'])) {
+    header("Location: login.php");
+    exit;
+}
+$admin = $_SESSION['admin_user'];
 include "koneksi.php";
 try {
     $qSiswa = $koneksi->query("SELECT COUNT(*) FROM siswa");
@@ -459,11 +465,15 @@ body {
             </ul>
         </div>
 
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 10px;">
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
                 <i class="fa-solid fa-moon"></i>
                 <span id="themeBtnText">Mode Terang</span>
             </button>
+            <a href="logout.php" class="theme-toggle-btn" style="border-color: rgba(239, 68, 68, 0.15); color: var(--danger); background: rgba(239, 68, 68, 0.05); text-decoration: none;">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Keluar</span>
+            </a>
         </div>
     </aside>
 

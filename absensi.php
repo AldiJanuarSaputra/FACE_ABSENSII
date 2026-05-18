@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['admin_user']) && !isset($_SESSION['siswa_user'])) {
+    header("Location: login.php");
+    exit;
+}
 include "koneksi.php";
 date_default_timezone_set("Asia/Jakarta");
 $hariIni = date("Y-m-d");
@@ -502,9 +507,15 @@ button:disabled {
             <button class="btn-reg" type="button" style="width:100%;"><i class="fa-solid fa-user-plus"></i>Daftar Wajah</button>
         </a>
     </div>
-    <a href="index.php" style="text-decoration:none; display: block; width: 100%;">
-        <button class="btn-secondary" type="button"><i class="fa-solid fa-arrow-left-long"></i>Kembali ke Menu</button>
-    </a>
+    <?php if (isset($_SESSION['admin_user'])): ?>
+        <a href="index.php" style="text-decoration:none; display: block; width: 100%;">
+            <button class="btn-secondary" type="button"><i class="fa-solid fa-arrow-left-long" style="margin-right: 6px;"></i>Kembali ke Menu Admin</button>
+        </a>
+    <?php else: ?>
+        <a href="siswa_dashboard.php" style="text-decoration:none; display: block; width: 100%;">
+            <button class="btn-secondary" type="button"><i class="fa-solid fa-arrow-left-long" style="margin-right: 6px;"></i>Kembali ke Dasbor Siswa</button>
+        </a>
+    <?php endif; ?>
 
     <p id="status" class="info">Memuat sistem...</p>
 

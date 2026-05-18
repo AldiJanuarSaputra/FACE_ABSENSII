@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['admin_user']) && !isset($_SESSION['siswa_user'])) {
+    echo "Akses tidak sah!";
+    exit;
+}
 include "koneksi.php";
 
 $data       = json_decode(file_get_contents("php://input"), true);
