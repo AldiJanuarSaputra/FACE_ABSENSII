@@ -37,7 +37,7 @@ Fitur ini berfokus pada gerbang masuk (*login gateway*) yang cerdas. Sistem akan
 * **Cabang Git (*Branch*)**: `hasbi`
 * **Daftar Tugas (TODO)**:
   - [x] Memisahkan kredensial Supabase dari `koneksi.php` menggunakan library `php-dotenv` via file `.env`. (SUKSES)
-  - [ ] **Database Schema Upgrade**:
+  - [x] **Database Schema Upgrade**: (SUKSES)
     * Menambahkan kolom `password` (untuk enkripsi hash) pada tabel `siswa`.
     * Membuat tabel baru `admin` (id, username, password, nama, role: 'admin'/'guru').
   - [ ] **Unified Portal Login**: Membuat 1 halaman login premium (Glassmorphism UI) untuk umum. Pengguna bisa memilih masuk sebagai **Siswa** (menggunakan NIS & Password) atau **Admin/Guru** (menggunakan Username & Password).
