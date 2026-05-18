@@ -22,24 +22,30 @@ Sebagai Project Manager, Anda telah berhasil membuat dan menyetel cabang kerja k
 
 ```mermaid
 graph TD
-    F1[Fitur 1: Keamanan & Env <br> PIC: Hasbi & Aldi] --> F2[Fitur 2: AI Anti-Spoofing <br> PIC: Fiis & Veve]
+    F1[Fitur 1: Portal Multi-User & Keamanan <br> PIC: Hasbi & Aldi] --> F2[Fitur 2: AI Anti-Spoofing <br> PIC: Fiis & Veve]
     F2 --> F3[Fitur 3: PWA Mobile <br> PIC: Veve]
-    F3 --> F4[Fitur 4: Dashboard Grafik <br> PIC: Dwi]
+    F3 --> F4[Fitur 4: Ruang Admin & Dashboard Grafik <br> PIC: Dwi]
     F4 --> F5[Fitur 5: Ekspor Laporan <br> PIC: Desta]
     F5 --> F6[Fitur 6: QA & Rilis <br> PIC: Aldi & Desta]
 ```
 
 ---
 
-### 🔒 FITUR 1: Sistem Keamanan & Autentikasi Admin-Guru
-Fitur ini berfokus pada pengamanan database Supabase, pencegahan SQL Injection, dan pembatasan hak akses halaman kelola data agar tidak bisa ditembus sembarang orang.
+### 🔒 FITUR 1: Portal Login Multi-User & Autentikasi Keamanan
+Fitur ini berfokus pada gerbang masuk (*login gateway*) yang cerdas. Sistem akan membedakan akses masuk untuk **Siswa** dan **Admin/Guru**, lalu mengarahkan mereka ke ruang kerja masing-masing menggunakan sistem otentikasi PHP Session & Hash Password yang aman.
 * **Penanggung Jawab (PIC)**: **Hasbi** (Lead) & **Aldi** (Assisting)
 * **Cabang Git (*Branch*)**: `hasbi`
 * **Daftar Tugas (TODO)**:
-  - [ ] Memisahkan kredensial Supabase dari `koneksi.php` menggunakan library `php-dotenv` via file `.env`.
-  - [ ] Membuat halaman login Admin & Guru yang aman dengan enkripsi password (`password_hash`).
-  - [ ] Implementasi manajemen *session* di PHP agar halaman `siswa.php` dan `rekap.php` tidak bisa diakses langsung via URL tanpa login.
-  - [ ] Melakukan sanitasi input seluruh formulir menggunakan Prepared Statements (PDO).
+  - [x] Memisahkan kredensial Supabase dari `koneksi.php` menggunakan library `php-dotenv` via file `.env`. (SUKSES)
+  - [ ] **Database Schema Upgrade**:
+    * Menambahkan kolom `password` (untuk enkripsi hash) pada tabel `siswa`.
+    * Membuat tabel baru `admin` (id, username, password, nama, role: 'admin'/'guru').
+  - [ ] **Unified Portal Login**: Membuat 1 halaman login premium (Glassmorphism UI) untuk umum. Pengguna bisa memilih masuk sebagai **Siswa** (menggunakan NIS & Password) atau **Admin/Guru** (menggunakan Username & Password).
+  - [ ] **Smart Routing Logic**:
+    * Jika **Siswa** sukses login ➡️ Diarahkan otomatis ke **Portal Siswa** (`siswa_dashboard.php`) untuk mendaftar wajah, melihat riwayat absensi pribadinya, dan mengecek statistik keterlambatannya.
+    * Jika **Admin/Guru** sukses login ➡️ Diarahkan otomatis ke **Ruang Admin** (`admin_dashboard.php` / `index.php`) untuk memantau scanner live, mengelola data siswa, rekapitulasi, dan melihat analitik kelas.
+  - [ ] **Enkripsi Keamanan**: Menggunakan `password_hash()` saat pendaftaran password dan `password_verify()` saat login untuk mencegah kebocoran password.
+  - [ ] **Middleware Session**: Menghalangi siswa agar tidak bisa menembus halaman Admin secara paksa via ketik URL manual di browser.
 
 ---
 
@@ -65,14 +71,15 @@ Mengubah aplikasi web menjadi Progressive Web App agar bisa diinstal di Android/
 
 ---
 
-### 📊 FITUR 4: Dashboard Analitik Grafik (Chart.js)
-Membuat halaman statistik kehadiran harian dan bulanan yang interaktif bagi admin untuk mempermudah monitoring siswa.
+### 📊 FITUR 4: Ruang Admin & Dashboard Analitik Grafik (Chart.js)
+Membuat ruangan khusus admin untuk memantau absensi siswa secara real-time, mengelola data, dan menyajikan statistik kehadiran harian dan bulanan secara interaktif.
 * **Penanggung Jawab (PIC)**: **Dwi** (Lead)
 * **Cabang Git (*Branch*)**: `dwi`
 * **Daftar Tugas (TODO)**:
-  - [ ] Integrasi library **Chart.js** pada halaman utama dashboard admin.
-  - [ ] Membuat grafik kehadiran harian (Hadir vs Lambat) dan persentase kehadiran per kelas.
-  - [ ] Membuat widget ringkasan statistik (Total Siswa Terdaftar, Hadir Hari Ini, Terlambat Hari Ini, Tanpa Keterangan).
+  - [ ] Mendesain antarmuka **Ruang Admin** (`admin_dashboard.php`) dengan layout sidebar modern.
+  - [ ] Integrasi library **Chart.js** pada halaman utama dashboard admin untuk menampilkan grafik kehadiran harian.
+  - [ ] Membuat widget pemantau live (*Real-time Monitoring*) siswa yang baru saja absen saat kamera melakukan scan di kelas.
+  - [ ] Membuat panel rekap kehadiran per kelas dan daftar siswa terlambat hari ini.
 
 ---
 
