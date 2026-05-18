@@ -10,23 +10,27 @@ try {
 } catch (PDOException $e) {}
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Absensi Face ID</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ff1493">
+<meta name="theme-color" content="#6366f1">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script defer src="js/face-api.min.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('Service Worker registered!', reg.scope))
-      .catch(err => console.log('Service Worker failed!', err));
-  });
-}
+    // Theme Initializer
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered!', reg.scope))
+          .catch(err => console.log('Service Worker failed!', err));
+      });
+    }
 </script>
 
 <style>
@@ -38,7 +42,7 @@ if ('serviceWorker' in navigator) {
     box-sizing: border-box;
 }
 
-:root {
+:root, html[data-theme="dark"] {
     --bg-dark: #090f1d;
     --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
     --card-bg: rgba(15, 23, 42, 0.55);
@@ -54,6 +58,49 @@ if ('serviceWorker' in navigator) {
     --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
+}
+
+html[data-theme="light"] {
+    --bg-dark: #f8fafc;
+    --bg-gradient: radial-gradient(circle at top, #e0e7ff 0%, #f8fafc 100%);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-border: rgba(99, 102, 241, 0.08);
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-glow: rgba(79, 70, 229, 0.15);
+    --secondary: #0ea5e9;
+    --secondary-hover: #0284c7;
+    --secondary-glow: rgba(14, 165, 233, 0.15);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+}
+
+/* Floating theme toggle button */
+.theme-toggle-floating {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+.theme-toggle-floating:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -424,6 +471,10 @@ button:disabled {
 </head>
 <body>
 
+<button class="theme-toggle-floating" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle Theme">
+    <i class="fa-solid fa-moon"></i>
+</button>
+
 <!-- PWA Splash Screen overlay -->
 <div id="splash-screen" class="splash-screen">
     <div class="splash-content">
@@ -720,6 +771,31 @@ function setStatus(msg, cls="info"){
         splashStatus.innerHTML = msg;
     }
 }
+
+// ── Theme Toggle Logic ──
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateThemeUI(newTheme);
+}
+
+function updateThemeUI(theme) {
+    const themeBtn = document.getElementById('themeBtn');
+    if (!themeBtn) return;
+    
+    if (theme === 'light') {
+        themeBtn.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
+    } else {
+        themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+    }
+}
+
+// Set correct toggle button UI on page load
+updateThemeUI(savedTheme);
 
 // ── Init ───────────────────────────────────────────────
 (async()=>{

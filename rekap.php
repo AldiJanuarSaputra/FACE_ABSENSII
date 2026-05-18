@@ -25,7 +25,7 @@ try {
     $qSiswa = $koneksi->query("SELECT COUNT(*) FROM siswa");
     $totalSiswa = $qSiswa->fetchColumn();
 
-    // Total Hadir Hari Ini / Semua (Hadir)
+    // Total Hadir
     $qHadir = $koneksi->query("SELECT COUNT(*) FROM absensi WHERE status = 'Hadir'");
     $totalHadir = $qHadir->fetchColumn();
 
@@ -47,7 +47,7 @@ try {
     }
 } catch (PDOException $e) {}
 
-// 3. Query Utama Rekap Absensi
+// 3. Query Utama Laporan Absensi
 $logs = [];
 try {
     $sql = "SELECT id, nis, nama, kelas, tanggal, jam, status FROM absensi WHERE 1=1";
@@ -77,32 +77,36 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rekapitulasi Absensi Face ID</title>
+<title>Rekap Absensi – Face Absensi</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#6366f1">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('Service Worker registered!', reg.scope))
-      .catch(err => console.log('Service Worker failed!', err));
-  });
-}
+    // Theme Initializer (mencegah kedipan putih/FOUC)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered!', reg.scope))
+          .catch(err => console.log('Service Worker failed!', err));
+      });
+    }
 </script>
 <style>
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-:root {
+:root, html[data-theme="dark"] {
     --bg-dark: #090f1d;
     --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
     --card-bg: rgba(15, 23, 42, 0.55);
@@ -118,6 +122,32 @@ if ('serviceWorker' in navigator) {
     --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
+    --sidebar-bg: rgba(15, 23, 42, 0.4);
+    --sidebar-border: rgba(255, 255, 255, 0.05);
+    --active-menu: rgba(99, 102, 241, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="light"] {
+    --bg-dark: #f8fafc;
+    --bg-gradient: radial-gradient(circle at top, #e0e7ff 0%, #f8fafc 100%);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-border: rgba(99, 102, 241, 0.08);
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-glow: rgba(79, 70, 229, 0.15);
+    --secondary: #0ea5e9;
+    --secondary-hover: #0284c7;
+    --secondary-glow: rgba(14, 165, 233, 0.15);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --sidebar-bg: rgba(255, 255, 255, 0.65);
+    --sidebar-border: rgba(99, 102, 241, 0.08);
+    --active-menu: rgba(79, 70, 229, 0.08);
+    --input-bg: rgba(99, 102, 241, 0.03);
 }
 
 body {
@@ -125,46 +155,147 @@ body {
     min-height: 100vh;
     background: var(--bg-gradient);
     color: var(--text-primary);
-    padding: 30px 20px;
+    display: flex;
+    overflow-x: hidden;
 }
 
-.wrapper {
-    max-width: 1000px;
-    margin: 0 auto;
+/* Layout Wrapper */
+.layout-wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
 }
 
-header {
+/* Sidebar Styling */
+.sidebar {
+    width: 280px;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--sidebar-border);
+    padding: 30px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+.brand-icon {
+    font-size: 24px;
+    color: var(--primary);
+}
+.brand-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+.brand-name span {
+    color: var(--primary);
+}
+
+.menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.menu-item a:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item.active a {
+    color: var(--primary);
+    background: var(--active-menu);
+    font-weight: 700;
+}
+
+/* Bottom Bar - Theme Toggle */
+.sidebar-footer {
+    border-top: 1px solid var(--sidebar-border);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.theme-toggle-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+/* Header Dashboard */
+.dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
     border-bottom: 1px solid var(--card-border);
     padding-bottom: 20px;
 }
 
-h1 { 
+.welcome-box h2 {
     font-family: 'Outfit', sans-serif;
-    font-size: 28px; 
-    font-weight: 800; 
-    color: var(--text-primary); 
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
 }
-h1 span { color: var(--primary); }
+.welcome-box p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
 
-.btn-back {
-    padding: 10px 18px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
+/* Hamburger Menu */
+.hamburger {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
     color: var(--text-primary);
-    text-decoration: none;
-    font-size: 13.5px;
-    font-weight: 700;
-    transition: all 0.3s ease;
-}
-.btn-back:hover { 
-    background: rgba(255, 255, 255, 0.1); 
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px); 
 }
 
 /* Grid Statistik */
@@ -402,11 +533,31 @@ tr:hover td {
     font-size: 16px;
 }
 
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0; bottom: 0;
+        box-shadow: 25px 0 50px rgba(0,0,0,0.4);
+    }
+    .sidebar.active {
+        left: 0;
+    }
+    .main-content {
+        padding: 30px 20px;
+    }
+    .hamburger {
+        display: block;
+    }
+}
+
 /* Print Styles */
 @media print {
     body { background: #fff !important; color: #000 !important; padding: 0; }
-    .wrapper { max-width: 100% !important; }
-    header, .filter-wrap, .btn-back, .btn-print, .btn-reset, .no-print { display: none !important; }
+    .layout-wrapper { display: block !important; }
+    .sidebar, header, .filter-wrap, .btn-print, .btn-reset, .no-print { display: none !important; }
+    .main-content { padding: 0 !important; }
     .stats-grid { grid-template-columns: repeat(3, 1fr) !important; margin-bottom: 20px !important; }
     .card { background: none !important; border: 1px solid #ddd !important; color: #000 !important; box-shadow: none !important; }
     .card-icon { border: 1px solid #ddd !important; background: none !important; color: #000 !important; }
@@ -432,136 +583,206 @@ tr:hover td {
 </head>
 <body>
 
-<div class="wrapper">
-    <header>
-        <h1><i class="fa-solid fa-chart-line" style="color: var(--primary); margin-right: 10px;"></i>Rekapitulasi <span>Absensi</span></h1>
-        <a href="index.php" class="btn-back"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Kembali ke Menu</a>
-    </header>
+<div class="layout-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="brand-section">
+                <i class="fa-solid fa-face-viewfinder brand-icon"></i>
+                <h1 class="brand-name">Face<span>Absen</span></h1>
+            </div>
+            
+            <ul class="menu-list">
+                <li class="menu-item">
+                    <a href="index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
+                </li>
+                <li class="menu-item">
+                    <a href="siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
+                </li>
+                <li class="menu-item active">
+                    <a href="rekap.php"><i class="fa-solid fa-chart-line"></i>Rekap Absensi</a>
+                </li>
+                <li class="menu-item" style="margin-top: 15px; border-top: 1px solid var(--sidebar-border); padding-top: 15px;">
+                    <a href="absensi.php" style="color: var(--primary);"><i class="fa-solid fa-camera"></i>Scan Kehadiran</a>
+                </li>
+                <li class="menu-item">
+                    <a href="register.php" style="color: var(--secondary);"><i class="fa-solid fa-user-plus"></i>Registrasi Wajah</a>
+                </li>
+            </ul>
+        </div>
 
-    <!-- Statistik Cards -->
-    <div class="stats-grid">
-        <div class="card">
-            <div class="card-icon card-total"><i class="fa-solid fa-users"></i></div>
-            <div class="card-info">
-                <h3>Total Siswa</h3>
-                <p><?php echo $totalSiswa; ?></p>
+        <div class="sidebar-footer">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
+                <i class="fa-solid fa-moon"></i>
+                <span id="themeBtnText">Mode Terang</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="dashboard-header no-print">
+            <div class="welcome-box">
+                <h2>Rekapitulasi Absensi</h2>
+                <p>Pantau data statistik kehadiran siswa dan cetak laporan resmi.</p>
+            </div>
+            <div class="hamburger" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </header>
+
+        <!-- Statistik Cards -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="card-icon card-total"><i class="fa-solid fa-users"></i></div>
+                <div class="card-info">
+                    <h3>Total Siswa</h3>
+                    <p><?php echo $totalSiswa; ?></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon card-hadir"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="card-info">
+                    <h3>Total Hadir</h3>
+                    <p><?php echo $totalHadir; ?></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon card-lambat"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="card-info">
+                    <h3>Total Terlambat</h3>
+                    <p><?php echo $totalLambat; ?></p>
+                </div>
             </div>
         </div>
-        <div class="card">
-            <div class="card-icon card-hadir"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="card-info">
-                <h3>Total Hadir</h3>
-                <p><?php echo $totalHadir; ?></p>
-            </div>
+
+        <!-- Filter Form -->
+        <div class="filter-wrap no-print">
+            <form method="GET" class="filter-form">
+                <div class="filter-group">
+                    <label for="cari">Cari Siswa</label>
+                    <input type="text" id="cari" name="cari" placeholder="Nama / NIS..." value="<?php echo htmlspecialchars($cari); ?>">
+                </div>
+
+                <div class="filter-group">
+                    <label for="kelas">Filter Kelas</label>
+                    <select id="kelas" name="kelas">
+                        <option value="">-- Semua Kelas --</option>
+                        <?php foreach ($listKelas as $k): ?>
+                            <option value="<?php echo htmlspecialchars($k); ?>" <?php echo $kelas === $k ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($k); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="tanggal">Filter Tanggal</label>
+                    <input type="date" id="tanggal" name="tanggal" value="<?php echo htmlspecialchars($tanggal); ?>">
+                </div>
+
+                <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Filter</button>
+                <a href="rekap.php" class="btn-reset"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
+                <button type="button" class="btn-print" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Cetak</button>
+            </form>
         </div>
-        <div class="card">
-            <div class="card-icon card-lambat"><i class="fa-solid fa-clock-rotate-left"></i></div>
-            <div class="card-info">
-                <h3>Total Terlambat</h3>
-                <p><?php echo $totalLambat; ?></p>
+
+        <?php if(isset($errorDb)): ?>
+            <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 16px; margin-bottom: 20px; color: var(--danger);">
+                <i class="fa-solid fa-circle-exclamation" style="margin-right: 8px;"></i><strong>Error Database:</strong> <?php echo htmlspecialchars($errorDb); ?>
             </div>
-        </div>
-    </div>
+        <?php endif; ?>
 
-    <!-- Filter Form -->
-    <div class="filter-wrap">
-        <form method="GET" class="filter-form">
-            <div class="filter-group">
-                <label for="cari">Cari Siswa</label>
-                <input type="text" id="cari" name="cari" placeholder="Nama / NIS..." value="<?php echo htmlspecialchars($cari); ?>">
+        <?php if($pesanSukses !== ''): ?>
+            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 16px; margin-bottom: 20px; color: var(--success); display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-circle-check"></i>
+                <span><?php echo htmlspecialchars($pesanSukses); ?></span>
             </div>
+        <?php endif; ?>
 
-            <div class="filter-group">
-                <label for="kelas">Filter Kelas</label>
-                <select id="kelas" name="kelas">
-                    <option value="">-- Semua Kelas --</option>
-                    <?php foreach ($listKelas as $k): ?>
-                        <option value="<?php echo htmlspecialchars($k); ?>" <?php echo $kelas === $k ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($k); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label for="tanggal">Filter Tanggal</label>
-                <input type="date" id="tanggal" name="tanggal" value="<?php echo htmlspecialchars($tanggal); ?>">
-            </div>
-
-            <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Filter</button>
-            <a href="rekap.php" class="btn-reset"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
-            <button type="button" class="btn-print" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Cetak</button>
-        </form>
-    </div>
-
-    <?php if(isset($errorDb)): ?>
-        <div style="background: rgba(255,107,107,0.15); border: 1px solid #ff6b6b; padding: 15px; border-radius: 10px; margin-bottom: 20px; color: #ff6b6b;">
-            <i class="fa-solid fa-circle-exclamation" style="margin-right: 8px;"></i><strong>Error Database:</strong> <?php echo htmlspecialchars($errorDb); ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if($pesanSukses !== ''): ?>
-        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 16px; margin-bottom: 20px; color: var(--success); display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-circle-check"></i>
-            <span><?php echo htmlspecialchars($pesanSukses); ?></span>
-        </div>
-    <?php endif; ?>
-
-    <!-- Table Absensi -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 60px;">No</th>
-                    <th>NIS</th>
-                    <th>Nama Lengkap</th>
-                    <th>Kelas</th>
-                    <th>Tanggal</th>
-                    <th>Jam Absen</th>
-                    <th style="width: 120px; text-align: center;">Status</th>
-                    <th style="width: 100px; text-align: center;" class="no-print">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($logs) > 0): ?>
-                    <?php $no = 1; foreach ($logs as $row): ?>
+        <!-- Table Absensi -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">No</th>
+                        <th>NIS</th>
+                        <th>Nama Lengkap</th>
+                        <th>Kelas</th>
+                        <th>Tanggal</th>
+                        <th>Jam Absen</th>
+                        <th style="width: 120px; text-align: center;">Status</th>
+                        <th style="width: 100px; text-align: center;" class="no-print">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($logs) > 0): ?>
+                        <?php $no = 1; foreach ($logs as $row): ?>
+                            <tr>
+                                <td><?php echo $no++; ?></td>
+                                <td style="font-weight: 700;"><?php echo htmlspecialchars($row['nis']); ?></td>
+                                <td><?php echo htmlspecialchars($row['nama']); ?></td>
+                                <td><span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
+                                <td><?php echo date("d/m/Y", strtotime($row['tanggal'])); ?></td>
+                                <td style="font-family: monospace; font-size: 14.5px; color: var(--secondary); font-weight: 700;"><?php echo htmlspecialchars($row['jam']); ?></td>
+                                <td style="text-align: center;">
+                                    <?php if ($row['status'] === 'Hadir'): ?>
+                                        <span class="badge badge-hadir">Hadir</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-lambat">Terlambat</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="text-align: center;" class="no-print">
+                                    <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>', '<?php echo date('d/m/Y', strtotime($row['tanggal'])); ?>')" style="padding: 6px 12px; font-size: 12px; background: rgba(239, 68, 68, 0.12); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 700;">
+                                        <i class="fa-solid fa-trash" style="margin-right: 4px;"></i>Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
                         <tr>
-                            <td><?php echo $no++; ?></td>
-                            <td style="font-weight: 700;"><?php echo htmlspecialchars($row['nis']); ?></td>
-                            <td><?php echo htmlspecialchars($row['nama']); ?></td>
-                            <td><span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
-                            <td><?php echo date("d/m/Y", strtotime($row['tanggal'])); ?></td>
-                            <td style="font-family: monospace; font-size: 14.5px; color: var(--secondary); font-weight: 700;"><?php echo htmlspecialchars($row['jam']); ?></td>
-                            <td style="text-align: center;">
-                                <?php if ($row['status'] === 'Hadir'): ?>
-                                    <span class="badge badge-hadir">Hadir</span>
-                                <?php else: ?>
-                                    <span class="badge badge-lambat">Terlambat</span>
-                                <?php endif; ?>
-                            </td>
-                            <td style="text-align: center;" class="no-print">
-                                <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>', '<?php echo date('d/m/Y', strtotime($row['tanggal'])); ?>')" style="padding: 6px 12px; font-size: 12px; background: rgba(239, 68, 68, 0.12); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 700;">
-                                    <i class="fa-solid fa-trash" style="margin-right: 4px;"></i>Hapus
-                                </button>
+                            <td colspan="8" class="empty-state">
+                                <i class="fa-solid fa-inbox" style="margin-right: 8px;"></i>Tidak ada data absensi yang ditemukan.
                             </td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="8" class="empty-state">
-                            <i class="fa-solid fa-inbox" style="margin-right: 8px;"></i>Tidak ada data absensi yang ditemukan.
-                        </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </main>
 </div>
 
 <script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateThemeUI(newTheme);
+}
+
+function updateThemeUI(theme) {
+    const themeBtn = document.getElementById('themeBtn');
+    
+    if (theme === 'light') {
+        themeBtn.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i><span id="themeBtnText">Mode Gelap</span>';
+    } else {
+        themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i><span id="themeBtnText">Mode Terang</span>';
+    }
+}
+
+// Set correct toggle button UI on page load
+updateThemeUI(savedTheme);
+
 function konfirmasiHapus(id, nama, tanggal) {
     if (confirm("Apakah Anda yakin ingin menghapus log absensi siswa '" + nama + "' pada tanggal " + tanggal + "?")) {
-        // Ambil query parameter pencarian/filter saat ini agar tidak ter-reset setelah hapus
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set('action', 'delete');
         urlParams.set('id', id);

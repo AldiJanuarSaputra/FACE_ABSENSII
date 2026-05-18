@@ -64,32 +64,36 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kelola Data Siswa – Face Absensi</title>
+<title>Kelola Siswa – Face Absensi</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#6366f1">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('Service Worker registered!', reg.scope))
-      .catch(err => console.log('Service Worker failed!', err));
-  });
-}
+    // Theme Initializer (mencegah kedipan putih/FOUC)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registered!', reg.scope))
+          .catch(err => console.log('Service Worker failed!', err));
+      });
+    }
 </script>
 <style>
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-:root {
+:root, html[data-theme="dark"] {
     --bg-dark: #090f1d;
     --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
     --card-bg: rgba(15, 23, 42, 0.55);
@@ -105,6 +109,32 @@ if ('serviceWorker' in navigator) {
     --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
+    --sidebar-bg: rgba(15, 23, 42, 0.4);
+    --sidebar-border: rgba(255, 255, 255, 0.05);
+    --active-menu: rgba(99, 102, 241, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="light"] {
+    --bg-dark: #f8fafc;
+    --bg-gradient: radial-gradient(circle at top, #e0e7ff 0%, #f8fafc 100%);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-border: rgba(99, 102, 241, 0.08);
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-glow: rgba(79, 70, 229, 0.15);
+    --secondary: #0ea5e9;
+    --secondary-hover: #0284c7;
+    --secondary-glow: rgba(14, 165, 233, 0.15);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --sidebar-bg: rgba(255, 255, 255, 0.65);
+    --sidebar-border: rgba(99, 102, 241, 0.08);
+    --active-menu: rgba(79, 70, 229, 0.08);
+    --input-bg: rgba(99, 102, 241, 0.03);
 }
 
 body {
@@ -112,60 +142,147 @@ body {
     min-height: 100vh;
     background: var(--bg-gradient);
     color: var(--text-primary);
-    padding: 30px 20px;
+    display: flex;
+    overflow-x: hidden;
 }
 
-.wrapper {
-    max-width: 1000px;
-    margin: 0 auto;
+/* Layout Wrapper */
+.layout-wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
 }
 
-header {
+/* Sidebar Styling */
+.sidebar {
+    width: 280px;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid var(--sidebar-border);
+    padding: 30px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+.brand-icon {
+    font-size: 24px;
+    color: var(--primary);
+}
+.brand-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+.brand-name span {
+    color: var(--primary);
+}
+
+.menu-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.menu-item a:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item.active a {
+    color: var(--primary);
+    background: var(--active-menu);
+    font-weight: 700;
+}
+
+/* Bottom Bar - Theme Toggle */
+.sidebar-footer {
+    border-top: 1px solid var(--sidebar-border);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.theme-toggle-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+/* Header Dashboard */
+.dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
     border-bottom: 1px solid var(--card-border);
     padding-bottom: 20px;
 }
 
-h1 { 
+.welcome-box h2 {
     font-family: 'Outfit', sans-serif;
-    font-size: 28px; 
-    font-weight: 800; 
-    color: var(--text-primary); 
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
 }
-h1 span { color: var(--primary); }
-
-.btn-row {
-    display: flex;
-    gap: 10px;
+.welcome-box p {
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
-.btn-act {
-    padding: 10px 18px;
-    border-radius: 12px;
+/* Hamburger Menu */
+.hamburger {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
     color: var(--text-primary);
-    text-decoration: none;
-    font-size: 13.5px;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    border: 1px solid var(--card-border);
-    background: rgba(255, 255, 255, 0.06);
-}
-.btn-act:hover { 
-    background: rgba(255, 255, 255, 0.1); 
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px); 
-}
-.btn-reg {
-    background: var(--primary);
-    border: none;
-    box-shadow: 0 4px 15px var(--primary-glow);
-}
-.btn-reg:hover { 
-    background: var(--primary-hover);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35); 
 }
 
 /* Notifikasi */
@@ -233,17 +350,34 @@ h1 span { color: var(--primary); }
 
 .btn-filter {
     padding: 12px 24px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--card-border);
+    background: var(--primary);
+    border: none;
     border-radius: 12px;
-    color: var(--text-primary);
+    color: #fff;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--primary-glow);
 }
 .btn-filter:hover { 
-    background: rgba(255, 255, 255, 0.1); 
+    background: var(--primary-hover);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35); 
+}
+
+.btn-reset {
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+.btn-reset:hover {
+    background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -429,90 +563,150 @@ tr:hover td {
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0; bottom: 0;
+        box-shadow: 25px 0 50px rgba(0,0,0,0.4);
+    }
+    .sidebar.active {
+        left: 0;
+    }
+    .main-content {
+        padding: 30px 20px;
+    }
+    .hamburger {
+        display: block;
+    }
+}
 </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <header>
-        <h1><i class="fa-solid fa-users-gear" style="color: var(--primary); margin-right: 10px;"></i>Kelola Data <span>Siswa</span></h1>
-        <div class="btn-row">
-            <a href="register.php" class="btn-act btn-reg"><i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i>Daftar Wajah Baru</a>
-            <a href="index.php" class="btn-act"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Menu</a>
-        </div>
-    </header>
-
-    <!-- Notifikasi -->
-    <?php if ($pesan !== ''): ?>
-        <div class="alert alert-<?php echo $tipePesan; ?>">
-            <i class="fa-solid <?php 
-                echo $tipePesan === 'ok' ? 'fa-circle-check' : ($tipePesan === 'err' ? 'fa-circle-exclamation' : 'fa-circle-info'); 
-            ?>"></i>
-            <span><?php echo htmlspecialchars($pesan); ?></span>
-        </div>
-    <?php endif; ?>
-
-    <!-- Search Box -->
-    <div class="filter-wrap">
-        <form method="GET" class="filter-form">
-            <div class="filter-group">
-                <label for="cari">Cari Nama / NIS Siswa</label>
-                <input type="text" id="cari" name="cari" placeholder="Ketik nama atau NIS siswa..." value="<?php echo htmlspecialchars($cari); ?>">
+<div class="layout-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="brand-section">
+                <i class="fa-solid fa-face-viewfinder brand-icon"></i>
+                <h1 class="brand-name">Face<span>Absen</span></h1>
             </div>
-            <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Cari</button>
-            <?php if ($cari !== ''): ?>
-                <a href="siswa.php" class="btn-act" style="padding: 12px 18px;"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
-            <?php endif; ?>
-        </form>
-    </div>
+            
+            <ul class="menu-list">
+                <li class="menu-item">
+                    <a href="index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
+                </li>
+                <li class="menu-item active">
+                    <a href="siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
+                </li>
+                <li class="menu-item">
+                    <a href="rekap.php"><i class="fa-solid fa-chart-line"></i>Rekap Absensi</a>
+                </li>
+                <li class="menu-item" style="margin-top: 15px; border-top: 1px solid var(--sidebar-border); padding-top: 15px;">
+                    <a href="absensi.php" style="color: var(--primary);"><i class="fa-solid fa-camera"></i>Scan Kehadiran</a>
+                </li>
+                <li class="menu-item">
+                    <a href="register.php" style="color: var(--secondary);"><i class="fa-solid fa-user-plus"></i>Registrasi Wajah</a>
+                </li>
+            </ul>
+        </div>
 
-    <!-- Table Siswa -->
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 70px; text-align: center;">Foto</th>
-                    <th>NIS</th>
-                    <th>Nama Lengkap</th>
-                    <th>Kelas</th>
-                    <th style="width: 200px; text-align: center;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($listSiswa) > 0): ?>
-                    <?php foreach ($listSiswa as $row): ?>
+        <div class="sidebar-footer">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
+                <i class="fa-solid fa-moon"></i>
+                <span id="themeBtnText">Mode Terang</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="welcome-box">
+                <h2>Kelola Data Siswa</h2>
+                <p>Cari, edit, atau hapus pendaftaran wajah siswa.</p>
+            </div>
+            <div class="hamburger" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </header>
+
+        <!-- Notifikasi -->
+        <?php if ($pesan !== ''): ?>
+            <div class="alert alert-<?php echo $tipePesan; ?>">
+                <i class="fa-solid <?php 
+                    echo $tipePesan === 'ok' ? 'fa-circle-check' : ($tipePesan === 'err' ? 'fa-circle-exclamation' : 'fa-circle-info'); 
+                ?>"></i>
+                <span><?php echo htmlspecialchars($pesan); ?></span>
+            </div>
+        <?php endif; ?>
+
+        <!-- Search Box -->
+        <div class="filter-wrap">
+            <form method="GET" class="filter-form">
+                <div class="filter-group">
+                    <label for="cari">Cari Nama / NIS Siswa</label>
+                    <input type="text" id="cari" name="cari" placeholder="Ketik nama atau NIS siswa..." value="<?php echo htmlspecialchars($cari); ?>">
+                </div>
+                <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Cari</button>
+                <?php if ($cari !== ''): ?>
+                    <a href="siswa.php" class="btn-reset" style="padding: 12px 18px;"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
+                <?php endif; ?>
+            </form>
+        </div>
+
+        <!-- Table Siswa -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 70px; text-align: center;">Foto</th>
+                        <th>NIS</th>
+                        <th>Nama Lengkap</th>
+                        <th>Kelas</th>
+                        <th style="width: 200px; text-align: center;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($listSiswa) > 0): ?>
+                        <?php foreach ($listSiswa as $row): ?>
+                            <tr>
+                                <td style="text-align: center;">
+                                    <?php if (!empty($row['wajah'])): ?>
+                                        <img src="<?php echo $row['wajah']; ?>" alt="Foto Wajah" class="avatar">
+                                    <?php else: ?>
+                                        <div class="avatar-none"><i class="fa-solid fa-user"></i></div>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="font-weight: 700; color: var(--secondary);"><?php echo htmlspecialchars($row['nis']); ?></td>
+                                <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nama']); ?></td>
+                                <td><span style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
+                                <td style="text-align: center;">
+                                    <button class="btn-edit" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', '<?php echo addslashes($row['kelas']); ?>')">
+                                        <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Edit
+                                    </button>
+                                    <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
+                                        <i class="fa-solid fa-trash" style="margin-right: 5px;"></i>Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
                         <tr>
-                            <td style="text-align: center;">
-                                <?php if (!empty($row['wajah'])): ?>
-                                    <img src="<?php echo $row['wajah']; ?>" alt="Foto Wajah" class="avatar">
-                                <?php else: ?>
-                                    <div class="avatar-none"><i class="fa-solid fa-user"></i></div>
-                                <?php endif; ?>
-                            </td>
-                            <td style="font-weight: 700; color: #ff9edb;"><?php echo htmlspecialchars($row['nis']); ?></td>
-                            <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nama']); ?></td>
-                            <td><span style="background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
-                            <td style="text-align: center;">
-                                <button class="btn-edit" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', '<?php echo addslashes($row['kelas']); ?>')">
-                                    <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Edit
-                                </button>
-                                <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
-                                    <i class="fa-solid fa-trash" style="margin-right: 5px;"></i>Hapus
-                                </button>
+                            <td colspan="5" class="empty-state" style="padding: 50px; text-align: center; color: var(--text-secondary);">
+                                <i class="fa-solid fa-users-slash" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                                Belum ada siswa terdaftar atau pencarian tidak ditemukan.
                             </td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="5" class="empty-state" style="padding: 50px; text-align: center; color: #aaa;">
-                            <i class="fa-solid fa-users-slash" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                            Belum ada siswa terdaftar atau pencarian tidak ditemukan.
-                        </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </main>
 </div>
 
 <!-- Modal Edit Siswa -->
@@ -545,6 +739,33 @@ tr:hover td {
 <script>
 const modal = document.getElementById("modalEdit");
 
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateThemeUI(newTheme);
+}
+
+function updateThemeUI(theme) {
+    const themeBtn = document.getElementById('themeBtn');
+    
+    if (theme === 'light') {
+        themeBtn.innerHTML = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i><span id="themeBtnText">Mode Gelap</span>';
+    } else {
+        themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i><span id="themeBtnText">Mode Terang</span>';
+    }
+}
+
+// Set correct toggle button UI on page load
+updateThemeUI(savedTheme);
+
 function bukaModal(id, nis, nama, kelas) {
     document.getElementById("edit-id").value = id;
     document.getElementById("edit-nis").value = nis;
@@ -557,7 +778,6 @@ function tutupModal() {
     modal.style.display = "none";
 }
 
-// Tutup modal jika klik di luar box
 window.onclick = function(event) {
     if (event.target == modal) {
         tutupModal();
