@@ -443,9 +443,6 @@ td {
                 <li class="menu-item">
                     <a href="absensi.php" style="color: var(--primary);"><i class="fa-solid fa-camera"></i>Scan Kehadiran</a>
                 </li>
-                <li class="menu-item">
-                    <a href="register.php" style="color: var(--secondary);"><i class="fa-solid fa-user-plus"></i>Daftar Wajah Anda</a>
-                </li>
             </ul>
         </div>
 
@@ -514,15 +511,6 @@ td {
                 </div>
                 <p>Kehadiran dicatat secara instan dan otomatis menggunakan pemindai wajah cerdas di sekolah. Cukup klik tombol di bawah untuk membuka pemindai.</p>
                 <a href="absensi.php" class="action-btn">Mulai Pemindaian Wajah</a>
-            </div>
-
-            <div class="action-card sec-accent">
-                <div class="action-header">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <h4>Registrasi / Update Wajah</h4>
-                </div>
-                <p>Belum terdaftar atau baru mengganti gaya rambut? Rekam data wajah unik Anda kembali agar kamera pemindai dapat mengenali Anda dengan mudah.</p>
-                <a href="register.php" class="action-btn">Daftarkan Wajah</a>
             </div>
         </section>
 
