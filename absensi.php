@@ -30,121 +30,422 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
-body{
-    font-family:Arial,sans-serif;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:linear-gradient(135deg,#000000,#1a001a,#ff1493);
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.container{
-    width:480px;
-    background:rgba(255,255,255,0.08);
-    backdrop-filter:blur(14px);
-    border:1px solid rgba(255,255,255,0.15);
-    border-radius:20px;
-    padding:30px;
-    text-align:center;
-    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+:root {
+    --bg-dark: #070008;
+    --neon-pink: #ff1493;
+    --neon-pink-glow: rgba(255, 20, 147, 0.4);
+    --neon-purple: #8b00ff;
+    --neon-purple-glow: rgba(139, 0, 255, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #ffc4e8;
+    --success: #00ff66;
+    --danger: #ff3b30;
+    --warning: #ffcc00;
 }
 
-h1{color:#fff;font-size:26px;margin-bottom:6px;}
-.subtitle{color:#ff9edb;font-size:13px;margin-bottom:20px;}
-
-.video-wrap{
-    position:relative;
-    display:inline-block;
+body {
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #1b0022 0%, #050006 100%);
+    overflow-x: hidden;
+    color: var(--text-primary);
+    padding: 15px;
 }
 
-video{
-    width:360px;height:270px;
-    border-radius:15px;
-    border:3px solid #ff4db8;
-    background:#111;
-    display:block;
-}
-
-canvas.overlay{
-    position:absolute;
-    top:0;left:0;
-    width:360px;height:270px;
-    border-radius:15px;
-    pointer-events:none;
-}
-
-.btn-row{display:flex;gap:10px;margin-top:14px;}
-
-button{
-    flex:1;padding:14px;
-    border:none;border-radius:12px;
-    font-size:15px;font-weight:bold;color:#fff;
-    cursor:pointer;
-    background:linear-gradient(90deg,#ff1493,#ff69b4);
-    transition:0.3s;
-}
-button:hover{transform:scale(1.03);box-shadow:0 0 15px #ff69b4;}
-button:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-
-.btn-reg{background:linear-gradient(90deg,#6a0dad,#9b30ff);}
-
-#status{
-    margin-top:14px;
-    color:#fff;
-    font-size:14px;
-    min-height:20px;
-    line-height:1.6;
-}
-.ok{color:#7fff7f;}
-.err{color:#ff6b6b;}
-.info{color:#ffe066;}
-
-.btn-secondary{
-    background: rgba(255,255,255,0.08) !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    margin-top: 10px;
+/* Mobile-First Layout container */
+.container {
     width: 100%;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 12px;
-    padding: 14px;
-    cursor: pointer;
-    transition: 0.3s;
+    max-width: 440px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Container Glowing Neon Outline Effects */
+.container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 20, 147, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Header typography */
+h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-}
-.btn-secondary:hover{
-    background: rgba(255,255,255,0.15) !important;
-    box-shadow: none !important;
-    transform: scale(1.02);
+    gap: 8px;
 }
 
-/* Hasil absen box */
-#hasil-box{
-    display:none;
-    margin-top:14px;
-    background:rgba(0,0,0,0.35);
-    border-radius:12px;
-    padding:12px;
-    font-size:14px;
-    color:#fff;
-    text-align:left;
-    line-height:1.8;
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 24px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+    position: relative;
+    z-index: 1;
 }
-#hasil-box.show{display:block;}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Camera Scanner Container */
+.video-wrap {
+    position: relative;
+    display: inline-block;
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 6px;
+    background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+    box-shadow: 0 0 25px rgba(139, 0, 255, 0.25);
+    margin-bottom: 12px;
+    z-index: 1;
+    width: 100%;
+}
+
+video {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/3;
+    border-radius: 14px;
+    background: #000;
+    display: block;
+    object-fit: cover;
+}
+
+canvas.overlay {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    border-radius: 14px;
+    pointer-events: none;
+}
+
+/* Sweeping Scanning Line */
+.video-wrap::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: calc(100% - 12px);
+    height: 3px;
+    background: linear-gradient(to right, transparent, var(--neon-pink), #ffffff, var(--neon-pink), transparent);
+    animation: scan 3s linear infinite;
+    box-shadow: 0 0 12px var(--neon-pink);
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes scan {
+    0% { top: 6px; }
+    50% { top: calc(100% - 9px); }
+    100% { top: 6px; }
+}
+
+/* Button & Controls Redesign */
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+    position: relative;
+    z-index: 1;
+}
+
+button {
+    flex: 1;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--neon-pink), #ff48a5);
+    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.35);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.5);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-reg {
+    background: linear-gradient(90deg, var(--neon-purple), #a448ff);
+    box-shadow: 0 4px 15px rgba(139, 0, 255, 0.35);
+}
+
+.btn-reg:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(139, 0, 255, 0.5);
+}
+
+.btn-secondary {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    margin-top: 12px;
+    width: 100%;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 16px;
+    padding: 14px;
+    cursor: pointer;
+    box-shadow: none;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-2px);
+}
+
+/* Status Text Styles */
+#status {
+    margin-top: 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+    min-height: 24px;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+.ok { color: var(--success); text-shadow: 0 0 10px rgba(0, 255, 102, 0.2); }
+.err { color: var(--danger); text-shadow: 0 0 10px rgba(255, 59, 48, 0.2); }
+.info { color: #ffe066; text-shadow: 0 0 10px rgba(255, 224, 102, 0.2); }
+
+/* Scan Result Box - futuristic styling */
+#hasil-box {
+    display: none;
+    margin-top: 16px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 20, 147, 0.25);
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 13.5px;
+    color: #fff;
+    text-align: left;
+    line-height: 1.8;
+    animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    position: relative;
+    z-index: 1;
+}
+
+#hasil-box.show {
+    display: block;
+}
+
+#hasil-box strong {
+    color: var(--neon-pink);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+}
+
+/* Mini Rekap Box */
+#mini-rekap-box {
+    margin-top: 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 16px;
+    text-align: left;
+    position: relative;
+    z-index: 1;
+}
+
+#mini-rekap-box h3 {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#mini-rekap-box table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+#mini-rekap-box th {
+    padding: 8px 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+#mini-rekap-box td {
+    padding: 8px 6px;
+    color: var(--text-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-hadir {
+    background: rgba(0, 255, 102, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(0, 255, 102, 0.3);
+}
+
+.badge-lambat {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+/* Splash Screen Redesign */
+.splash-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: radial-gradient(circle at center, #1b0022 0%, #050006 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+.splash-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+.splash-content {
+    text-align: center;
+}
+.splash-logo {
+    font-size: 80px;
+    color: var(--neon-pink);
+    text-shadow: 0 0 35px var(--neon-pink-glow);
+    animation: pulse 2s infinite ease-in-out;
+    margin-bottom: 20px;
+}
+.splash-title {
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+    font-size: 24px;
+    letter-spacing: 4px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+.splash-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3.5px solid rgba(255, 20, 147, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--neon-pink);
+    animation: spin 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite;
+    margin: 0 auto 24px;
+    box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+}
+.splash-status {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 45px rgba(255, 20, 147, 0.8); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 <body>
 
+<!-- PWA Splash Screen overlay -->
+<div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+        <div class="splash-logo">
+            <i class="fa-solid fa-face-viewfinder"></i>
+        </div>
+        <h2 class="splash-title">FACE ID ABSENSI</h2>
+        <div class="splash-spinner"></div>
+        <p id="splash-status" class="splash-status">Mengaktifkan kamera & memuat model AI...</p>
+    </div>
+</div>
+
 <div class="container">
-    <h1><i class="fa-solid fa-graduation-cap" style="color: #ff1493; margin-right: 8px;"></i>Absensi Face ID</h1>
-    <p class="subtitle">Posisikan wajah di depan kamera, lalu tekan Scan</p>
+    <h1><i class="fa-solid fa-face-viewfinder" style="color: var(--neon-pink)"></i>Absensi Face ID</h1>
+    <p class="subtitle">Posisikan wajah di depan kamera, lalu ketuk Scan</p>
 
     <div class="video-wrap">
         <video id="video" autoplay muted playsinline></video>
@@ -152,19 +453,19 @@ button:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
     </div>
 
     <div class="btn-row">
-        <button id="btnScan" onclick="scan()" disabled><i class="fa-solid fa-camera" style="margin-right: 6px;"></i>Scan Wajah</button>
+        <button id="btnScan" onclick="scan()" disabled><i class="fa-solid fa-camera-retro"></i>Scan Wajah</button>
         <a href="register.php" style="flex:1;text-decoration:none;">
-            <button class="btn-reg" type="button" style="width:100%;"><i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i>Daftar Wajah</button>
+            <button class="btn-reg" type="button" style="width:100%;"><i class="fa-solid fa-user-plus"></i>Daftar Wajah</button>
         </a>
     </div>
     <a href="index.php" style="text-decoration:none; display: block; width: 100%;">
-        <button class="btn-secondary" type="button"><i class="fa-solid fa-house"></i>Kembali ke Menu Utama</button>
+        <button class="btn-secondary" type="button"><i class="fa-solid fa-arrow-left-long"></i>Kembali ke Menu</button>
     </a>
 
     <p id="status" class="info">Memuat sistem...</p>
 
     <div id="hasil-box">
-        <strong>Hasil Absensi:</strong><br>
+        <strong>Hasil Absensi:</strong>
         <span id="info-nama"></span><br>
         <span id="info-nis"></span><br>
         <span id="info-kelas"></span><br>
@@ -173,30 +474,28 @@ button:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
     </div>
 
     <!-- Mini Rekap Hari Ini -->
-    <div id="mini-rekap-box" style="margin-top: 20px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 18px; text-align: left;">
-        <h3 style="font-size: 15px; color: #ff9edb; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-            <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Absensi Hari Ini
-        </h3>
+    <div id="mini-rekap-box">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Absen Hari Ini</h3>
         
         <div style="max-height: 180px; overflow-y: auto; padding-right: 3px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table>
                 <thead>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left;">
-                        <th style="padding: 8px 5px; color: #bbb; font-weight: 600;">Nama</th>
-                        <th style="padding: 8px 5px; color: #bbb; font-weight: 600;">Kelas</th>
-                        <th style="padding: 8px 5px; color: #bbb; font-weight: 600; text-align: center; width: 80px;">Jam</th>
-                        <th style="padding: 8px 5px; color: #bbb; font-weight: 600; text-align: center; width: 90px;">Status</th>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Kelas</th>
+                        <th style="text-align: center; width: 60px;">Jam</th>
+                        <th style="text-align: center; width: 80px;">Status</th>
                     </tr>
                 </thead>
                 <tbody id="body-mini-rekap">
                     <?php if (count($riwayatHariIni) > 0): ?>
                         <?php foreach ($riwayatHariIni as $log): ?>
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <td style="padding: 8px 5px; font-weight: 600;"><?php echo htmlspecialchars($log['nama']); ?></td>
-                                <td style="padding: 8px 5px;"><?php echo htmlspecialchars($log['kelas']); ?></td>
-                                <td style="padding: 8px 5px; text-align: center; color: #ff9edb; font-family: monospace; font-size: 13px;"><?php echo htmlspecialchars($log['jam']); ?></td>
-                                <td style="padding: 8px 5px; text-align: center;">
-                                    <span class="badge <?php echo $log['status'] === 'Hadir' ? 'badge-hadir' : 'badge-lambat'; ?>" style="padding: 3px 8px; font-size: 10px; border-radius: 6px;">
+                            <tr>
+                                <td style="font-weight: 600;"><?php echo htmlspecialchars($log['nama']); ?></td>
+                                <td><?php echo htmlspecialchars($log['kelas']); ?></td>
+                                <td style="text-align: center; color: var(--neon-pink); font-family: 'JetBrains Mono', monospace; font-size: 12px;"><?php echo htmlspecialchars($log['jam']); ?></td>
+                                <td style="text-align: center;">
+                                    <span class="badge <?php echo $log['status'] === 'Hadir' ? 'badge-hadir' : 'badge-lambat'; ?>">
                                         <?php echo htmlspecialchars($log['status']); ?>
                                     </span>
                                 </td>
@@ -204,8 +503,8 @@ button:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr id="empty-mini-row">
-                            <td colspan="4" style="padding: 20px; text-align: center; color: #aaa;">
-                                Belum ada siswa yang melakukan absensi hari ini.
+                            <td colspan="4" style="padding: 20px; text-align: center; color: rgba(255,255,255,0.4);">
+                                Belum ada riwayat absensi hari ini.
                             </td>
                         </tr>
                     <?php endif; ?>
@@ -225,6 +524,15 @@ const hasilBox = document.getElementById("hasil-box");
 let labeledDescriptors = [];
 let isScanning = false;
 
+// ── Splash screen hide ─────────────────────────────────
+function hideSplash() {
+    const splash = document.getElementById("splash-screen");
+    if (splash) {
+        splash.classList.add("fade-out");
+        setTimeout(() => splash.remove(), 500);
+    }
+}
+
 // ── Kamera ─────────────────────────────────────────────
 async function startCamera(){
     try{
@@ -236,6 +544,7 @@ async function startCamera(){
         return true;
     }catch(e){
         setStatus("❌ Kamera gagal: "+e.message,"err");
+        setTimeout(hideSplash, 3000);
         return false;
     }
 }
@@ -254,6 +563,7 @@ async function loadModels(){
     }catch(e){
         setStatus("❌ Model gagal dimuat: "+e.message,"err");
         console.error(e);
+        setTimeout(hideSplash, 3000);
     }
 }
 
@@ -266,6 +576,7 @@ async function loadStudentDescriptors(){
         if(!list || list.length === 0){
             setStatus("⚠️ Belum ada wajah terdaftar. Silakan <a href='register.php' style='color:#ff9edb'>daftar</a> dulu","info");
             btnScan.disabled = false;
+            setTimeout(hideSplash, 1000);
             return;
         }
 
@@ -279,10 +590,12 @@ async function loadStudentDescriptors(){
 
         btnScan.disabled = false;
         setStatus("✅ Sistem siap – "+list.length+" wajah terdaftar","ok");
+        setTimeout(hideSplash, 600);
     }catch(e){
         setStatus("❌ Gagal memuat data siswa: "+e.message,"err");
         btnScan.disabled = false;
         console.error(e);
+        setTimeout(hideSplash, 3000);
     }
 }
 
@@ -407,6 +720,12 @@ function clearOverlay(){
 function setStatus(msg, cls="info"){
     statusEl.className = cls;
     statusEl.innerHTML = msg;
+    
+    // Also update splash status if it's currently showing
+    const splashStatus = document.getElementById("splash-status");
+    if (splashStatus) {
+        splashStatus.innerHTML = msg;
+    }
 }
 
 // ── Init ───────────────────────────────────────────────
