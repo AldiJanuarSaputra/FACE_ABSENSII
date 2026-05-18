@@ -59,9 +59,9 @@ Mengubah aplikasi web menjadi Progressive Web App agar bisa diinstal di Android/
 * **Penanggung Jawab (PIC)**: **Veve** (Lead)
 * **Cabang Git (*Branch*)**: `veve`
 * **Daftar Tugas (TODO)**:
-  - [ ] Menyusun file `manifest.json` dan *Service Worker* javascript untuk caching aset CSS, JS, dan gambar secara offline.
-  - [ ] Mendesain ulang layout CSS `absensi.php` dan `register.php` menjadi *Mobile-First Design* menggunakan Glassmorphism dan warna neon.
-  - [ ] Membuat *splash screen* (layar pemuatan) dan ikon aplikasi khusus saat diinstal di HP.
+  - [x] Menyusun file `manifest.json` dan *Service Worker* javascript untuk caching aset CSS, JS, dan gambar secara offline.
+  - [x] Mendesain ulang layout CSS `absensi.php` and `register.php` menjadi *Mobile-First Design* menggunakan Glassmorphism dan warna neon.
+  - [x] Membuat *splash screen* (layar pemuatan) dan ikon aplikasi khusus saat diinstal di HP.
 
 ---
 
