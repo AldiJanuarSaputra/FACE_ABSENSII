@@ -4,8 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registrasi Wajah – Face Absensi</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff1493">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script defer src="js/face-api.min.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('Service Worker registered!', reg.scope))
+      .catch(err => console.log('Service Worker failed!', err));
+  });
+}
+</script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
