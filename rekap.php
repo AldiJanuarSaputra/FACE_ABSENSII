@@ -83,8 +83,8 @@ try {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rekapitulasi Absensi Face ID</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ff1493">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#6366f1">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script>
 if ('serviceWorker' in navigator) {
@@ -96,12 +96,35 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+:root {
+    --bg-dark: #090f1d;
+    --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
+    --card-bg: rgba(15, 23, 42, 0.55);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-glow: rgba(99, 102, 241, 0.2);
+    --secondary: #0ea5e9;
+    --secondary-hover: #0284c7;
+    --secondary-glow: rgba(14, 165, 233, 0.2);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+}
 
 body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #000000, #130113, #240024);
-    color: #fff;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
     padding: 30px 20px;
 }
 
@@ -115,24 +138,34 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--card-border);
     padding-bottom: 20px;
 }
 
-h1 { font-size: 28px; font-weight: 700; color: #fff; }
-h1 span { color: #ff1493; }
+h1 { 
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px; 
+    font-weight: 800; 
+    color: var(--text-primary); 
+}
+h1 span { color: var(--primary); }
+
 .btn-back {
     padding: 10px 18px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 10px;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    color: var(--text-primary);
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: 0.3s;
+    font-size: 13.5px;
+    font-weight: 700;
+    transition: all 0.3s ease;
 }
-.btn-back:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+.btn-back:hover { 
+    background: rgba(255, 255, 255, 0.1); 
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px); 
+}
 
 /* Grid Statistik */
 .stats-grid {
@@ -143,15 +176,16 @@ h1 span { color: #ff1493; }
 }
 
 .card {
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
     padding: 20px;
     display: flex;
     align-items: center;
     gap: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .card-icon {
@@ -161,38 +195,51 @@ h1 span { color: #ff1493; }
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 22px;
 }
 
 .card-total {
-    background: rgba(0, 191, 255, 0.15);
-    color: #00bfff;
-    border: 1px solid rgba(0, 191, 255, 0.3);
+    background: rgba(14, 165, 233, 0.12);
+    color: var(--secondary);
+    border: 1px solid rgba(14, 165, 233, 0.2);
 }
 
 .card-hadir {
-    background: rgba(127, 255, 127, 0.15);
-    color: #7fff7f;
-    border: 1px solid rgba(127, 255, 127, 0.3);
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .card-lambat {
-    background: rgba(255, 107, 107, 0.15);
-    color: #ff6b6b;
-    border: 1px solid rgba(255, 107, 107, 0.3);
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-.card-info h3 { font-size: 13px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-.card-info p { font-size: 28px; font-weight: 700; }
+.card-info h3 { 
+    font-family: 'Outfit', sans-serif;
+    font-size: 12.5px; 
+    color: var(--text-secondary); 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    font-weight: 700;
+}
+.card-info p { 
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px; 
+    font-weight: 800; 
+}
 
 /* Filter Box */
 .filter-wrap {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
     padding: 20px;
     margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .filter-form {
@@ -210,72 +257,93 @@ h1 span { color: #ff1493; }
 .filter-group label {
     display: block;
     font-size: 13px;
-    color: #bbb;
+    color: var(--text-secondary);
     margin-bottom: 8px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .filter-group input, .filter-group select {
     width: 100%;
     padding: 12px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
     color: #fff;
     font-size: 14px;
     outline: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.3s ease;
 }
-.filter-group select option { background: #1a001a; color: #fff; }
+
+.filter-group input:focus, .filter-group select:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-group select option { background: #0f172a; color: #fff; }
 
 .btn-filter {
     padding: 12px 24px;
-    background: linear-gradient(90deg, #ff1493, #ff69b4);
+    background: var(--primary);
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #fff;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.3s;
-    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--primary-glow);
 }
-.btn-filter:hover { transform: translateY(-2px); box-shadow: 0 0 15px #ff69b4; }
+.btn-filter:hover { 
+    background: var(--primary-hover);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35); 
+    transform: translateY(-2px); 
+}
 
 .btn-reset {
     padding: 12px 20px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 10px;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    color: var(--text-primary);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     text-align: center;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
-.btn-reset:hover { background: rgba(255,255,255,0.2); }
+.btn-reset:hover { 
+    background: rgba(255, 255, 255, 0.1); 
+    border-color: rgba(255, 255, 255, 0.2);
+}
 
 .btn-print {
     padding: 12px 20px;
-    background: linear-gradient(90deg, #00bfff, #1e90ff);
+    background: var(--secondary);
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #fff;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--secondary-glow);
 }
-.btn-print:hover { transform: translateY(-2px); box-shadow: 0 0 15px #00bfff; }
+.btn-print:hover { 
+    background: var(--secondary-hover);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35);
+    transform: translateY(-2px); 
+}
 
 /* Table Section */
 .table-container {
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
     overflow-x: auto;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
 }
 
 table {
@@ -285,22 +353,25 @@ table {
 }
 
 th {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ff9edb;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
     padding: 16px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    border-bottom: 1px solid rgba(255,255,255,0.12);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--card-border);
 }
 
 td {
     padding: 16px 20px;
     font-size: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 tr:hover td {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.01);
 }
 
 /* Badges */
@@ -313,21 +384,21 @@ tr:hover td {
 }
 
 .badge-hadir {
-    background: rgba(127, 255, 127, 0.15);
-    color: #7fff7f;
-    border: 1px solid rgba(127, 255, 127, 0.3);
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .badge-lambat {
-    background: rgba(255, 107, 107, 0.15);
-    color: #ff6b6b;
-    border: 1px solid rgba(255, 107, 107, 0.3);
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .empty-state {
     padding: 50px;
     text-align: center;
-    color: #aaa;
+    color: var(--text-secondary);
     font-size: 16px;
 }
 
@@ -347,7 +418,6 @@ tr:hover td {
     .badge-hadir { background: none !important; color: green !important; border: 1px solid green !important; }
     .badge-lambat { background: none !important; color: red !important; border: 1px solid red !important; }
     
-    /* Judul cetak khusus */
     body::before {
         content: "REKAPITULASI LAPORAN ABSENSI FACE ID";
         display: block;
@@ -364,7 +434,7 @@ tr:hover td {
 
 <div class="wrapper">
     <header>
-        <h1><i class="fa-solid fa-chart-line" style="color: #ff1493; margin-right: 10px;"></i>Rekapitulasi <span>Absensi</span></h1>
+        <h1><i class="fa-solid fa-chart-line" style="color: var(--primary); margin-right: 10px;"></i>Rekapitulasi <span>Absensi</span></h1>
         <a href="index.php" class="btn-back"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Kembali ke Menu</a>
     </header>
 
@@ -431,7 +501,7 @@ tr:hover td {
     <?php endif; ?>
 
     <?php if($pesanSukses !== ''): ?>
-        <div style="background: rgba(127,255,127,0.15); border: 1px solid #7fff7f; padding: 15px; border-radius: 10px; margin-bottom: 20px; color: #7fff7f; display: flex; align-items: center; gap: 10px;">
+        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 16px; margin-bottom: 20px; color: var(--success); display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-circle-check"></i>
             <span><?php echo htmlspecialchars($pesanSukses); ?></span>
         </div>
@@ -457,11 +527,11 @@ tr:hover td {
                     <?php $no = 1; foreach ($logs as $row): ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
-                            <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nis']); ?></td>
+                            <td style="font-weight: 700;"><?php echo htmlspecialchars($row['nis']); ?></td>
                             <td><?php echo htmlspecialchars($row['nama']); ?></td>
-                            <td><span style="background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; font-size: 13px;"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
+                            <td><span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
                             <td><?php echo date("d/m/Y", strtotime($row['tanggal'])); ?></td>
-                            <td style="font-family: monospace; font-size: 15px; color: #ff9edb;"><?php echo htmlspecialchars($row['jam']); ?></td>
+                            <td style="font-family: monospace; font-size: 14.5px; color: var(--secondary); font-weight: 700;"><?php echo htmlspecialchars($row['jam']); ?></td>
                             <td style="text-align: center;">
                                 <?php if ($row['status'] === 'Hadir'): ?>
                                     <span class="badge badge-hadir">Hadir</span>
@@ -470,7 +540,7 @@ tr:hover td {
                                 <?php endif; ?>
                             </td>
                             <td style="text-align: center;" class="no-print">
-                                <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>', '<?php echo date('d/m/Y', strtotime($row['tanggal'])); ?>')" style="padding: 6px 12px; font-size: 12px; background: rgba(255, 107, 107, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 6px; cursor: pointer; transition: 0.3s;">
+                                <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>', '<?php echo date('d/m/Y', strtotime($row['tanggal'])); ?>')" style="padding: 6px 12px; font-size: 12px; background: rgba(239, 68, 68, 0.12); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 700;">
                                     <i class="fa-solid fa-trash" style="margin-right: 4px;"></i>Hapus
                                 </button>
                             </td>

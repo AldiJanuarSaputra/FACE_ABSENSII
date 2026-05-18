@@ -19,7 +19,7 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 * {
     margin: 0;
@@ -28,27 +28,30 @@ if ('serviceWorker' in navigator) {
 }
 
 :root {
-    --bg-dark: #070008;
-    --neon-pink: #ff1493;
-    --neon-pink-glow: rgba(255, 20, 147, 0.4);
-    --neon-purple: #8b00ff;
-    --neon-purple-glow: rgba(139, 0, 255, 0.4);
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --text-primary: #ffffff;
-    --text-secondary: #ffc4e8;
-    --success: #00ff66;
-    --danger: #ff3b30;
-    --warning: #ffcc00;
+    --bg-dark: #090f1d;
+    --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
+    --card-bg: rgba(15, 23, 42, 0.55);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-glow: rgba(99, 102, 241, 0.2);
+    --secondary: #0ea5e9;
+    --secondary-hover: #0284c7;
+    --secondary-glow: rgba(14, 165, 233, 0.2);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, #1b0022 0%, #050006 100%);
+    background: var(--bg-gradient);
     overflow-x: hidden;
     color: var(--text-primary);
     padding: 15px;
@@ -58,40 +61,27 @@ body {
 .container {
     width: 100%;
     max-width: 440px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid var(--glass-border);
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--card-border);
     border-radius: 24px;
     padding: 24px;
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
-                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6),
+                inset 0 1px 1px rgba(255, 255, 255, 0.08);
     position: relative;
     overflow: hidden;
 }
 
-/* Container Glowing Neon Outline Effects */
-.container::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 20, 147, 0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-
 /* Header typography */
 h2 {
+    font-family: 'Outfit', sans-serif;
     font-size: 24px;
     font-weight: 800;
     letter-spacing: 0.5px;
     margin-bottom: 20px;
     color: var(--text-primary);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     position: relative;
     z-index: 1;
     display: flex;
@@ -105,22 +95,22 @@ input {
     width: 100%;
     padding: 12px 16px;
     margin: 8px 0;
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--card-border);
     outline: none;
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.04);
     color: #fff;
     font-size: 14.5px;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     transition: all 0.3s ease;
     position: relative;
     z-index: 1;
 }
 
 input:focus {
-    border-color: var(--neon-pink);
+    border-color: var(--primary);
     background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 10px rgba(255, 20, 147, 0.25);
+    box-shadow: 0 0 12px var(--primary-glow);
 }
 
 input::placeholder {
@@ -133,9 +123,9 @@ input::placeholder {
     display: inline-block;
     border-radius: 20px;
     overflow: hidden;
-    padding: 6px;
-    background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
-    box-shadow: 0 0 25px rgba(139, 0, 255, 0.25);
+    padding: 5px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
     margin-top: 15px;
     margin-bottom: 12px;
     z-index: 1;
@@ -154,10 +144,10 @@ video {
 
 canvas.overlay {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: calc(100% - 12px);
-    height: calc(100% - 12px);
+    top: 5px;
+    left: 5px;
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
     border-radius: 14px;
     pointer-events: none;
 }
@@ -166,21 +156,21 @@ canvas.overlay {
 .video-wrap::after {
     content: '';
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: calc(100% - 12px);
-    height: 3px;
-    background: linear-gradient(to right, transparent, var(--neon-pink), #ffffff, var(--neon-pink), transparent);
-    animation: scan 3s linear infinite;
-    box-shadow: 0 0 12px var(--neon-pink);
+    top: 5px;
+    left: 5px;
+    width: calc(100% - 10px);
+    height: 2.5px;
+    background: linear-gradient(to right, transparent, var(--primary), #ffffff, var(--primary), transparent);
+    animation: scan 4s ease-in-out infinite;
+    opacity: 0.8;
     pointer-events: none;
     z-index: 10;
 }
 
 @keyframes scan {
-    0% { top: 6px; }
-    50% { top: calc(100% - 9px); }
-    100% { top: 6px; }
+    0% { top: 5px; }
+    50% { top: calc(100% - 7.5px); }
+    100% { top: 5px; }
 }
 
 /* Button & Controls Redesign */
@@ -189,12 +179,12 @@ button {
     padding: 14px 16px;
     border: none;
     border-radius: 16px;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     color: #fff;
     cursor: pointer;
-    background: linear-gradient(90deg, var(--neon-pink), #ff48a5);
-    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.35);
+    background: var(--primary);
+    box-shadow: 0 4px 15px var(--primary-glow);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     align-items: center;
@@ -206,8 +196,9 @@ button {
 }
 
 button:hover:not(:disabled) {
+    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.5);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
 }
 
 button:active:not(:disabled) {
@@ -221,10 +212,10 @@ button:disabled {
 }
 
 .btn-secondary {
-    background: linear-gradient(90deg, var(--neon-purple), #a448ff) !important;
-    box-shadow: 0 4px 15px rgba(139, 0, 255, 0.35) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid var(--card-border) !important;
     margin-top: 10px;
-    color: #fff;
+    color: var(--text-primary);
     font-weight: 700;
     border-radius: 16px;
     padding: 14px;
@@ -235,7 +226,8 @@ button:disabled {
 }
 
 .btn-secondary:hover {
-    box-shadow: 0 6px 20px rgba(139, 0, 255, 0.5) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
     transform: translateY(-2px);
 }
 
@@ -250,16 +242,16 @@ button:disabled {
     z-index: 1;
 }
 
-.ok { color: var(--success); text-shadow: 0 0 10px rgba(0, 255, 102, 0.2); }
-.err { color: var(--danger); text-shadow: 0 0 10px rgba(255, 59, 48, 0.2); }
-.info { color: #ffe066; text-shadow: 0 0 10px rgba(255, 224, 102, 0.2); }
+.ok { color: var(--success); }
+.err { color: var(--danger); }
+.info { color: #ffe066; }
 
 /* Splash Screen Redesign */
 .splash-screen {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: radial-gradient(circle at center, #1b0022 0%, #050006 100%);
+    background: var(--bg-gradient);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -275,8 +267,7 @@ button:disabled {
 }
 .splash-logo {
     font-size: 80px;
-    color: var(--neon-pink);
-    text-shadow: 0 0 35px var(--neon-pink-glow);
+    color: var(--primary);
     animation: pulse 2s infinite ease-in-out;
     margin-bottom: 20px;
 }
@@ -287,17 +278,16 @@ button:disabled {
     letter-spacing: 4px;
     font-weight: 800;
     margin-bottom: 30px;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 .splash-spinner {
     width: 48px;
     height: 48px;
-    border: 3.5px solid rgba(255, 20, 147, 0.1);
+    border: 3.5px solid rgba(99, 102, 241, 0.1);
     border-radius: 50%;
-    border-top-color: var(--neon-pink);
+    border-top-color: var(--primary);
     animation: spin 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite;
     margin: 0 auto 24px;
-    box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
 }
 .splash-status {
     font-family: 'Outfit', sans-serif;
@@ -310,7 +300,7 @@ button:disabled {
 }
 @keyframes pulse {
     0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 45px rgba(255, 20, 147, 0.8); }
+    50% { transform: scale(1.06); opacity: 1; }
 }
 </style>
 </head>
@@ -329,7 +319,7 @@ button:disabled {
 </div>
 
 <div class="container">
-    <h2><i class="fa-solid fa-user-plus" style="color: var(--neon-pink)"></i>Registrasi Wajah</h2>
+    <h2><i class="fa-solid fa-user-plus" style="color: var(--primary)"></i>Registrasi Wajah</h2>
 
     <input type="text" id="nis"   placeholder="NIS Siswa">
     <input type="text" id="nama"  placeholder="Nama Lengkap">

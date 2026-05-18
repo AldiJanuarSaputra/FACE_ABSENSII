@@ -4,8 +4,8 @@
   "description": "Sistem absensi sekolah cerdas berbasis pengenalan wajah offline-first.",
   "start_url": "index.php",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#ff1493",
+  "background_color": "#090f1d",
+  "theme_color": "#6366f1",
   "orientation": "portrait-primary",
   "icons": [
     {

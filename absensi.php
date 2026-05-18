@@ -30,7 +30,7 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 * {
     margin: 0;
@@ -39,27 +39,30 @@ if ('serviceWorker' in navigator) {
 }
 
 :root {
-    --bg-dark: #070008;
-    --neon-pink: #ff1493;
-    --neon-pink-glow: rgba(255, 20, 147, 0.4);
-    --neon-purple: #8b00ff;
-    --neon-purple-glow: rgba(139, 0, 255, 0.4);
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --text-primary: #ffffff;
-    --text-secondary: #ffc4e8;
-    --success: #00ff66;
-    --danger: #ff3b30;
-    --warning: #ffcc00;
+    --bg-dark: #090f1d;
+    --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
+    --card-bg: rgba(15, 23, 42, 0.55);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-glow: rgba(99, 102, 241, 0.2);
+    --secondary: #0ea5e9;
+    --secondary-hover: #0284c7;
+    --secondary-glow: rgba(14, 165, 233, 0.2);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at center, #1b0022 0%, #050006 100%);
+    background: var(--bg-gradient);
     overflow-x: hidden;
     color: var(--text-primary);
     padding: 15px;
@@ -69,40 +72,27 @@ body {
 .container {
     width: 100%;
     max-width: 440px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid var(--glass-border);
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--card-border);
     border-radius: 24px;
     padding: 24px;
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6),
-                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6),
+                inset 0 1px 1px rgba(255, 255, 255, 0.08);
     position: relative;
     overflow: hidden;
 }
 
-/* Container Glowing Neon Outline Effects */
-.container::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 20, 147, 0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-
 /* Header typography */
 h1 {
+    font-family: 'Outfit', sans-serif;
     font-size: 24px;
     font-weight: 800;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
     color: var(--text-primary);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     position: relative;
     z-index: 1;
     display: flex;
@@ -113,9 +103,9 @@ h1 {
 
 .subtitle {
     color: var(--text-secondary);
-    font-size: 13px;
+    font-size: 13.5px;
     margin-bottom: 24px;
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 0.2px;
     position: relative;
     z-index: 1;
@@ -127,9 +117,9 @@ h1 {
     display: inline-block;
     border-radius: 20px;
     overflow: hidden;
-    padding: 6px;
-    background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
-    box-shadow: 0 0 25px rgba(139, 0, 255, 0.25);
+    padding: 5px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
     margin-bottom: 12px;
     z-index: 1;
     width: 100%;
@@ -147,10 +137,10 @@ video {
 
 canvas.overlay {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: calc(100% - 12px);
-    height: calc(100% - 12px);
+    top: 5px;
+    left: 5px;
+    width: calc(100% - 10px);
+    height: calc(100% - 10px);
     border-radius: 14px;
     pointer-events: none;
 }
@@ -159,21 +149,21 @@ canvas.overlay {
 .video-wrap::after {
     content: '';
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: calc(100% - 12px);
-    height: 3px;
-    background: linear-gradient(to right, transparent, var(--neon-pink), #ffffff, var(--neon-pink), transparent);
-    animation: scan 3s linear infinite;
-    box-shadow: 0 0 12px var(--neon-pink);
+    top: 5px;
+    left: 5px;
+    width: calc(100% - 10px);
+    height: 2.5px;
+    background: linear-gradient(to right, transparent, var(--primary), #ffffff, var(--primary), transparent);
+    animation: scan 4s ease-in-out infinite;
+    opacity: 0.8;
     pointer-events: none;
     z-index: 10;
 }
 
 @keyframes scan {
-    0% { top: 6px; }
-    50% { top: calc(100% - 9px); }
-    100% { top: 6px; }
+    0% { top: 5px; }
+    50% { top: calc(100% - 7.5px); }
+    100% { top: 5px; }
 }
 
 /* Button & Controls Redesign */
@@ -190,12 +180,12 @@ button {
     padding: 14px 16px;
     border: none;
     border-radius: 16px;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     color: #fff;
     cursor: pointer;
-    background: linear-gradient(90deg, var(--neon-pink), #ff48a5);
-    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.35);
+    background: var(--primary);
+    box-shadow: 0 4px 15px var(--primary-glow);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     align-items: center;
@@ -204,8 +194,9 @@ button {
 }
 
 button:hover:not(:disabled) {
+    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.5);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
 }
 
 button:active:not(:disabled) {
@@ -219,21 +210,25 @@ button:disabled {
 }
 
 .btn-reg {
-    background: linear-gradient(90deg, var(--neon-purple), #a448ff);
-    box-shadow: 0 4px 15px rgba(139, 0, 255, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    box-shadow: none;
 }
 
 .btn-reg:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(139, 0, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
 }
 
 .btn-secondary {
-    background: var(--glass-bg) !important;
-    border: 1px solid var(--glass-border) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid var(--card-border) !important;
     margin-top: 12px;
     width: 100%;
-    color: #fff;
-    font-weight: 600;
+    color: var(--text-primary);
+    font-weight: 700;
     border-radius: 16px;
     padding: 14px;
     cursor: pointer;
@@ -244,7 +239,7 @@ button:disabled {
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(255, 255, 255, 0.25) !important;
     transform: translateY(-2px);
 }
@@ -260,24 +255,24 @@ button:disabled {
     z-index: 1;
 }
 
-.ok { color: var(--success); text-shadow: 0 0 10px rgba(0, 255, 102, 0.2); }
-.err { color: var(--danger); text-shadow: 0 0 10px rgba(255, 59, 48, 0.2); }
-.info { color: #ffe066; text-shadow: 0 0 10px rgba(255, 224, 102, 0.2); }
+.ok { color: var(--success); }
+.err { color: var(--danger); }
+.info { color: #ffe066; }
 
-/* Scan Result Box - futuristic styling */
+/* Scan Result Box - sophisticated styling */
 #hasil-box {
     display: none;
     margin-top: 16px;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 20, 147, 0.25);
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--card-border);
     border-radius: 16px;
     padding: 16px;
     font-size: 13.5px;
-    color: #fff;
+    color: var(--text-primary);
     text-align: left;
     line-height: 1.8;
     animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     position: relative;
     z-index: 1;
 }
@@ -287,20 +282,21 @@ button:disabled {
 }
 
 #hasil-box strong {
-    color: var(--neon-pink);
+    font-family: 'Outfit', sans-serif;
+    color: var(--secondary);
     font-weight: 800;
     letter-spacing: 0.5px;
     display: block;
     margin-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 4px;
 }
 
 /* Mini Rekap Box */
 #mini-rekap-box {
     margin-top: 24px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--card-border);
     border-radius: 20px;
     padding: 16px;
     text-align: left;
@@ -309,15 +305,14 @@ button:disabled {
 }
 
 #mini-rekap-box h3 {
-    font-size: 14px;
-    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13.5px;
+    color: var(--text-primary);
     margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 8px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 #mini-rekap-box table {
@@ -328,9 +323,9 @@ button:disabled {
 
 #mini-rekap-box th {
     padding: 8px 6px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
     font-weight: 600;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 0.5px;
@@ -339,7 +334,7 @@ button:disabled {
 #mini-rekap-box td {
     padding: 8px 6px;
     color: var(--text-primary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 /* Badges */
@@ -354,15 +349,15 @@ button:disabled {
 }
 
 .badge-hadir {
-    background: rgba(0, 255, 102, 0.15);
+    background: rgba(16, 185, 129, 0.12);
     color: var(--success);
-    border: 1px solid rgba(0, 255, 102, 0.3);
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .badge-lambat {
-    background: rgba(255, 59, 48, 0.15);
+    background: rgba(239, 68, 68, 0.12);
     color: var(--danger);
-    border: 1px solid rgba(255, 59, 48, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* Splash Screen Redesign */
@@ -370,7 +365,7 @@ button:disabled {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: radial-gradient(circle at center, #1b0022 0%, #050006 100%);
+    background: var(--bg-gradient);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -386,8 +381,7 @@ button:disabled {
 }
 .splash-logo {
     font-size: 80px;
-    color: var(--neon-pink);
-    text-shadow: 0 0 35px var(--neon-pink-glow);
+    color: var(--primary);
     animation: pulse 2s infinite ease-in-out;
     margin-bottom: 20px;
 }
@@ -398,17 +392,16 @@ button:disabled {
     letter-spacing: 4px;
     font-weight: 800;
     margin-bottom: 30px;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 .splash-spinner {
     width: 48px;
     height: 48px;
-    border: 3.5px solid rgba(255, 20, 147, 0.1);
+    border: 3.5px solid rgba(99, 102, 241, 0.1);
     border-radius: 50%;
-    border-top-color: var(--neon-pink);
+    border-top-color: var(--primary);
     animation: spin 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite;
     margin: 0 auto 24px;
-    box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
 }
 .splash-status {
     font-family: 'Outfit', sans-serif;
@@ -421,7 +414,7 @@ button:disabled {
 }
 @keyframes pulse {
     0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 45px rgba(255, 20, 147, 0.8); }
+    50% { transform: scale(1.06); opacity: 1; }
 }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-8px); }
@@ -444,7 +437,7 @@ button:disabled {
 </div>
 
 <div class="container">
-    <h1><i class="fa-solid fa-face-viewfinder" style="color: var(--neon-pink)"></i>Absensi Face ID</h1>
+    <h1><i class="fa-solid fa-face-viewfinder" style="color: var(--primary)"></i>Absensi Face ID</h1>
     <p class="subtitle">Posisikan wajah di depan kamera, lalu ketuk Scan</p>
 
     <div class="video-wrap">
