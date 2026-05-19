@@ -94,10 +94,10 @@ try {
 }
 
 :root, html[data-theme="dark"] {
-    --bg-dark: #090f1d;
-    --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
-    --card-bg: rgba(15, 23, 42, 0.65);
-    --card-border: rgba(99, 102, 241, 0.28); /* Outline komponen ultra-jelas bernuansa Indigo */
+    --bg-dark: #07090e;
+    --bg-gradient: radial-gradient(circle at top, #111425 0%, #07090e 100%);
+    --card-bg: #111422; /* Solid dark obsidian card */
+    --card-border: #374151; /* Outline komponen ultra-tegas dark slate */
     --primary: #6366f1;
     --primary-hover: #4f46e5;
     --primary-glow: rgba(99, 102, 241, 0.3);
@@ -109,18 +109,18 @@ try {
     --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --sidebar-bg: rgba(10, 15, 30, 0.85);
-    --sidebar-border: rgba(99, 102, 241, 0.25); /* Pembatas sidebar ultra-jelas */
-    --active-menu: rgba(99, 102, 241, 0.2);
-    --input-bg: rgba(10, 15, 30, 0.6);
+    --sidebar-bg: #090a12;
+    --sidebar-border: #1f2937; /* Pembatas sidebar ultra-tegas */
+    --active-menu: rgba(99, 102, 241, 0.15);
+    --input-bg: #090a12;
     --row-border: rgba(99, 102, 241, 0.15); /* Garis pembatas baris tabel ultra-jelas */
 }
 
 html[data-theme="light"] {
     --bg-dark: #f8fafc;
     --bg-gradient: radial-gradient(circle at top, #e0e7ff 0%, #f8fafc 100%);
-    --card-bg: rgba(255, 255, 255, 0.8);
-    --card-border: rgba(99, 102, 241, 0.08);
+    --card-bg: #ffffff;
+    --card-border: #cbd5e1; /* Outline komponen terang yang tegas */
     --primary: #4f46e5;
     --primary-hover: #4338ca;
     --primary-glow: rgba(79, 70, 229, 0.15);
@@ -132,10 +132,10 @@ html[data-theme="light"] {
     --warning: #f59e0b;
     --text-primary: #0f172a;
     --text-secondary: #475569;
-    --sidebar-bg: rgba(255, 255, 255, 0.65);
-    --sidebar-border: rgba(99, 102, 241, 0.08);
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #cbd5e1;
     --active-menu: rgba(79, 70, 229, 0.08);
-    --input-bg: rgba(99, 102, 241, 0.03);
+    --input-bg: #f1f5f9;
     --row-border: rgba(0, 0, 0, 0.05); /* Garis pembatas baris tabel terang */
 }
 
@@ -161,7 +161,7 @@ body {
     background: var(--sidebar-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid var(--sidebar-border);
+    border-right: 2px solid var(--sidebar-border);
     padding: 30px 24px;
     display: flex;
     flex-direction: column;
@@ -232,7 +232,7 @@ body {
     width: 100%;
     padding: 12px;
     border-radius: 12px;
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
     font-weight: 700;
@@ -307,7 +307,7 @@ body {
     background: var(--card-bg);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     border-radius: 20px;
     padding: 20px;
     margin-bottom: 25px;
@@ -336,7 +336,7 @@ body {
     width: 100%;
     padding: 12px;
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     border-radius: 12px;
     color: #fff;
     font-size: 14px;
@@ -388,7 +388,7 @@ body {
     background: var(--card-bg);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
@@ -409,7 +409,7 @@ th {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--card-border);
+    border-bottom: 2px solid var(--card-border);
 }
 
 td {

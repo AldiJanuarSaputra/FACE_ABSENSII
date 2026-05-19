@@ -43,10 +43,10 @@ try {
 }
 
 :root, html[data-theme="dark"] {
-    --bg-dark: #090f1d;
-    --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
-    --card-bg: rgba(15, 23, 42, 0.65);
-    --card-border: rgba(99, 102, 241, 0.28); /* Outline komponen ultra-jelas bernuansa Indigo */
+    --bg-dark: #07090e;
+    --bg-gradient: radial-gradient(circle at top, #111425 0%, #07090e 100%);
+    --card-bg: #111422; /* Solid dark obsidian card */
+    --card-border: #374151; /* Outline komponen ultra-tegas dark slate */
     --primary: #6366f1;
     --primary-hover: #4f46e5;
     --primary-glow: rgba(99, 102, 241, 0.3);
@@ -64,8 +64,8 @@ try {
 html[data-theme="light"] {
     --bg-dark: #f8fafc;
     --bg-gradient: radial-gradient(circle at top, #e0e7ff 0%, #f8fafc 100%);
-    --card-bg: rgba(255, 255, 255, 0.8);
-    --card-border: rgba(99, 102, 241, 0.08);
+    --card-bg: #ffffff;
+    --card-border: #cbd5e1; /* Outline komponen terang yang tegas */
     --primary: #4f46e5;
     --primary-hover: #4338ca;
     --primary-glow: rgba(79, 70, 229, 0.15);
@@ -89,7 +89,7 @@ html[data-theme="light"] {
     height: 44px;
     border-radius: 50%;
     background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     color: var(--text-primary);
     display: flex;
     align-items: center;
@@ -124,7 +124,7 @@ body {
     background: var(--card-bg);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     border-radius: 24px;
     padding: 24px;
     text-align: center;
@@ -260,7 +260,7 @@ button:disabled {
 
 .btn-reg {
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--card-border);
+    border: 2px solid var(--card-border);
     color: var(--text-primary);
     box-shadow: none;
 }
@@ -273,7 +273,7 @@ button:disabled {
 
 .btn-secondary {
     background: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid var(--card-border) !important;
+    border: 2px solid var(--card-border) !important;
     margin-top: 12px;
     width: 100%;
     color: var(--text-primary);
