@@ -10,11 +10,15 @@ try {
     $qHadir->execute([':tgl' => $hariIni]);
     $totalHadir = $qHadir->fetchColumn();
 
+    $qKelas = $koneksi->query("SELECT COUNT(*) FROM kelas");
+    $totalKelas = $qKelas->fetchColumn();
+
     $qLambat = $koneksi->prepare("SELECT COUNT(*) FROM absensi WHERE tanggal = :tgl AND status = 'Terlambat'");
     $qLambat->execute([':tgl' => $hariIni]);
     $totalLambat = $qLambat->fetchColumn();
 } catch (PDOException $e) {
     $totalSiswa = 0;
+    $totalKelas = 0;
     $totalHadir = 0;
     $totalLambat = 0;
 }
@@ -445,6 +449,9 @@ body {
                     <a href="index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
                 </li>
                 <li class="menu-item">
+                    <a href="kelas.php"><i class="fa-solid fa-school"></i>Manajemen Kelas</a>
+                </li>
+                <li class="menu-item">
                     <a href="siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
                 </li>
                 <li class="menu-item">
@@ -490,6 +497,13 @@ body {
                 </div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.12); color: var(--primary);"><i class="fa-solid fa-school"></i></div>
+                <div class="stat-info">
+                    <h3>Total Kelas Aktif</h3>
+                    <p><?php echo $totalKelas; ?></p>
+                </div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="stat-info">
                     <h3>Hadir Hari Ini</h3>
@@ -530,7 +544,8 @@ body {
         <footer class="quick-guide">
             <h4><i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Instruksi Cepat Dasbor</h4>
             <ul>
-                <li><i class="fa-solid fa-chevron-right"></i> Gunakan tab **Kelola Siswa** untuk mencari, mengedit, atau menghapus daftar siswa terdaftar.</li>
+                <li><i class="fa-solid fa-chevron-right"></i> Gunakan tab **Manajemen Kelas** untuk mendaftarkan kelas dan menambahkan siswa ke dalamnya.</li>
+                <li><i class="fa-solid fa-chevron-right"></i> Gunakan tab **Kelola Siswa** untuk mencari, mengedit, atau menghapus daftar siswa terdaftar secara global.</li>
                 <li><i class="fa-solid fa-chevron-right"></i> Buka tab **Rekap Absensi** untuk menyaring laporan kehadiran harian/bulanan berdasarkan kelas dan mengunduh berkas laporan cetak resmi.</li>
                 <li><i class="fa-solid fa-chevron-right"></i> Anda dapat mengganti tema sistem (Terang / Gelap) dari pojok bawah menu Sidebar kiri kapan saja.</li>
             </ul>

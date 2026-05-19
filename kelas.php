@@ -8,36 +8,71 @@ $tipePesan = 'info';
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     try {
-        $stmt = $koneksi->prepare("DELETE FROM siswa WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        $pesan = "Data siswa berhasil dihapus!";
-        $tipePesan = "ok";
+        $cek = $koneksi->prepare("SELECT COUNT(id) FROM siswa WHERE kelas_id = :id");
+        $cek->execute([':id' => $id]);
+        $jml = $cek->fetchColumn();
+
+        if ($jml > 0) {
+            $pesan = "Gagal menghapus! Kelas ini masih memiliki $jml siswa.";
+            $tipePesan = "err";
+        } else {
+            $stmt = $koneksi->prepare("DELETE FROM kelas WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            $pesan = "Data kelas berhasil dihapus!";
+            $tipePesan = "ok";
+        }
     } catch (PDOException $e) {
         $pesan = "Gagal menghapus data: " . $e->getMessage();
         $tipePesan = "err";
     }
 }
 
-// ── 2. Proses Edit (Update) ───────────────────────────
-if (isset($_POST['action']) && $_POST['action'] === 'update') {
-    $id    = (int)$_POST['id'];
-    $nama  = trim($_POST['nama']);
-    $kelas = trim($_POST['kelas']);
-    $nis   = trim($_POST['nis']);
+// ── 2. Proses Tambah (Insert) ───────────────────────────
+if (isset($_POST['action']) && $_POST['action'] === 'add') {
+    $nama_kelas = trim($_POST['nama_kelas']);
+    $jurusan    = trim($_POST['jurusan']);
+    $tingkat    = trim($_POST['tingkat']);
 
-    if (!$nama || !$kelas || !$nis) {
-        $pesan = "Semua kolom edit harus diisi!";
+    if (!$nama_kelas) {
+        $pesan = "Nama kelas harus diisi!";
         $tipePesan = "err";
     } else {
         try {
-            $stmt = $koneksi->prepare("UPDATE siswa SET nis = :nis, nama = :nama, kelas = :kelas WHERE id = :id");
+            $stmt = $koneksi->prepare("INSERT INTO kelas (nama_kelas, jurusan, tingkat) VALUES (:nama, :jurusan, :tingkat)");
             $stmt->execute([
-                ':nis'   => $nis,
-                ':nama'  => $nama,
-                ':kelas' => $kelas,
-                ':id'    => $id
+                ':nama'    => $nama_kelas,
+                ':jurusan' => $jurusan,
+                ':tingkat' => $tingkat
             ]);
-            $pesan = "Data siswa (NIS: $nis) berhasil diperbarui!";
+            $pesan = "Kelas '$nama_kelas' berhasil ditambahkan!";
+            $tipePesan = "ok";
+        } catch (PDOException $e) {
+            $pesan = "Gagal menambah kelas: " . $e->getMessage();
+            $tipePesan = "err";
+        }
+    }
+}
+
+// ── 3. Proses Edit (Update) ───────────────────────────
+if (isset($_POST['action']) && $_POST['action'] === 'update') {
+    $id         = (int)$_POST['id'];
+    $nama_kelas = trim($_POST['nama_kelas']);
+    $jurusan    = trim($_POST['jurusan']);
+    $tingkat    = trim($_POST['tingkat']);
+
+    if (!$nama_kelas) {
+        $pesan = "Nama kelas harus diisi!";
+        $tipePesan = "err";
+    } else {
+        try {
+            $stmt = $koneksi->prepare("UPDATE kelas SET nama_kelas = :nama, jurusan = :jurusan, tingkat = :tingkat WHERE id = :id");
+            $stmt->execute([
+                ':nama'    => $nama_kelas,
+                ':jurusan' => $jurusan,
+                ':tingkat' => $tingkat,
+                ':id'      => $id
+            ]);
+            $pesan = "Data kelas berhasil diperbarui!";
             $tipePesan = "ok";
         } catch (PDOException $e) {
             $pesan = "Gagal memperbarui data: " . $e->getMessage();
@@ -46,18 +81,29 @@ if (isset($_POST['action']) && $_POST['action'] === 'update') {
     }
 }
 
-// ── 3. Proses Ambil Data & Filter (Read) ──────────────
+// ── 4. Proses Ambil Data & Filter (Read) ──────────────
 $cari = isset($_GET['cari']) ? trim($_GET['cari']) : '';
-$listSiswa = [];
+$listKelas = [];
 
 try {
+    $sql = "SELECT k.id, k.nama_kelas, k.jurusan, k.tingkat,
+                   COUNT(s.id) as total_siswa,
+                   SUM(CASE WHEN s.wajah IS NOT NULL AND s.wajah != '' THEN 1 ELSE 0 END) as total_wajah
+            FROM kelas k
+            LEFT JOIN siswa s ON k.id = s.kelas_id ";
     if ($cari !== '') {
-        $stmt = $koneksi->prepare("SELECT id, nis, nama, kelas, wajah FROM siswa WHERE nama ILIKE :cari OR nis ILIKE :cari ORDER BY nama ASC");
+        $sql .= "WHERE k.nama_kelas ILIKE :cari ";
+    }
+    $sql .= "GROUP BY k.id, k.nama_kelas, k.jurusan, k.tingkat
+             ORDER BY k.tingkat ASC, k.nama_kelas ASC";
+             
+    if ($cari !== '') {
+        $stmt = $koneksi->prepare($sql);
         $stmt->execute([':cari' => "%$cari%"]);
     } else {
-        $stmt = $koneksi->query("SELECT id, nis, nama, kelas, wajah FROM siswa ORDER BY nama ASC");
+        $stmt = $koneksi->query($sql);
     }
-    $listSiswa = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $listKelas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $pesan = "Error memuat data: " . $e->getMessage();
     $tipePesan = "err";
@@ -68,7 +114,7 @@ try {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kelola Siswa – Face Absensi</title>
+<title>Manajemen Kelas – Face Absensi</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#6366f1">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -601,9 +647,6 @@ tr:hover td {
                 <li class="menu-item">
                     <a href="index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
                 </li>
-                <li class="menu-item">
-                    <a href="kelas.php"><i class="fa-solid fa-school"></i>Manajemen Kelas</a>
-                </li>
                 <li class="menu-item active">
                     <a href="siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
                 </li>
@@ -632,8 +675,8 @@ tr:hover td {
         <!-- Header -->
         <header class="dashboard-header">
             <div class="welcome-box">
-                <h2>Kelola Data Siswa</h2>
-                <p>Cari, edit, atau hapus pendaftaran wajah siswa.</p>
+                <h2>Manajemen Kelas</h2>
+                <p>Kelola daftar kelas, tingkat, dan jurusan sekolah.</p>
             </div>
             <div class="hamburger" onclick="toggleSidebar()">
                 <i class="fa-solid fa-bars"></i>
@@ -651,50 +694,61 @@ tr:hover td {
         <?php endif; ?>
 
         <!-- Search Box -->
-        <div class="filter-wrap">
-            <form method="GET" class="filter-form">
+        <div class="filter-wrap" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <form method="GET" class="filter-form" style="margin: 0; flex: 1;">
                 <div class="filter-group">
-                    <label for="cari">Cari Nama / NIS Siswa</label>
-                    <input type="text" id="cari" name="cari" placeholder="Ketik nama atau NIS siswa..." value="<?php echo htmlspecialchars($cari); ?>">
+                    <label for="cari">Cari Nama Kelas</label>
+                    <input type="text" id="cari" name="cari" placeholder="Ketik nama kelas..." value="<?php echo htmlspecialchars($cari); ?>">
                 </div>
                 <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Cari</button>
                 <?php if ($cari !== ''): ?>
-                    <a href="siswa.php" class="btn-reset" style="padding: 12px 18px;"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
+                    <a href="kelas.php" class="btn-reset" style="padding: 12px 18px;"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
                 <?php endif; ?>
             </form>
+            <button class="btn-filter" style="background: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" onclick="bukaModalTambah()">
+                <i class="fa-solid fa-plus" style="margin-right: 6px;"></i>Tambah Kelas
+            </button>
         </div>
 
-        <!-- Table Siswa -->
+        <!-- Table Kelas -->
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 70px; text-align: center;">Foto</th>
-                        <th>NIS</th>
-                        <th>Nama Lengkap</th>
-                        <th>Kelas</th>
-                        <th style="width: 200px; text-align: center;">Aksi</th>
+                        <th>Nama Kelas</th>
+                        <th>Tingkat & Jurusan</th>
+                        <th style="text-align: center;">Total Siswa</th>
+                        <th style="text-align: center;">Progress Wajah</th>
+                        <th style="width: 250px; text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (count($listSiswa) > 0): ?>
-                        <?php foreach ($listSiswa as $row): ?>
+                    <?php if (count($listKelas) > 0): ?>
+                        <?php foreach ($listKelas as $row): ?>
                             <tr>
-                                <td style="text-align: center;">
-                                    <?php if (!empty($row['wajah'])): ?>
-                                        <img src="<?php echo $row['wajah']; ?>" alt="Foto Wajah" class="avatar">
-                                    <?php else: ?>
-                                        <div class="avatar-none"><i class="fa-solid fa-user"></i></div>
-                                    <?php endif; ?>
+                                <td style="font-weight: 700; color: var(--primary); font-size: 15px;"><?php echo htmlspecialchars($row['nama_kelas']); ?></td>
+                                <td>
+                                    <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-right: 5px;">Tk: <?php echo htmlspecialchars($row['tingkat']); ?></span>
+                                    <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-secondary);">Jurusan: <?php echo htmlspecialchars($row['jurusan']); ?></span>
                                 </td>
-                                <td style="font-weight: 700; color: var(--secondary);"><?php echo htmlspecialchars($row['nis']); ?></td>
-                                <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nama']); ?></td>
-                                <td><span style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
+                                <td style="text-align: center; font-weight: 700; font-size: 16px;"><?php echo $row['total_siswa']; ?></td>
                                 <td style="text-align: center;">
-                                    <button class="btn-edit" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', '<?php echo addslashes($row['kelas']); ?>')">
+                                    <?php 
+                                        $persen = $row['total_siswa'] > 0 ? round(($row['total_wajah'] / $row['total_siswa']) * 100) : 0;
+                                        $color = $persen == 100 ? 'var(--success)' : ($persen > 0 ? 'var(--warning)' : 'var(--danger)');
+                                    ?>
+                                    <div style="font-weight: 700; color: <?php echo $color; ?>;">
+                                        <?php echo $row['total_wajah']; ?> / <?php echo $row['total_siswa']; ?> (<?php echo $persen; ?>%)
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <a href="kelas_detail.php?id=<?php echo $row['id']; ?>" class="btn-edit" style="background: rgba(99, 102, 241, 0.12); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2); text-decoration: none;">
+                                        <i class="fa-solid fa-eye" style="margin-right: 5px;"></i>Detail
+                                    </a>
+                                    <button class="btn-edit" onclick="bukaModalEdit(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama_kelas']); ?>', '<?php echo addslashes($row['jurusan']); ?>', '<?php echo addslashes($row['tingkat']); ?>')">
                                         <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Edit
                                     </button>
-                                    <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
+                                    <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama_kelas']); ?>')">
                                         <i class="fa-solid fa-trash" style="margin-right: 5px;"></i>Hapus
                                     </button>
                                 </td>
@@ -703,8 +757,8 @@ tr:hover td {
                     <?php else: ?>
                         <tr>
                             <td colspan="5" class="empty-state" style="padding: 50px; text-align: center; color: var(--text-secondary);">
-                                <i class="fa-solid fa-users-slash" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                                Belum ada siswa terdaftar atau pencarian tidak ditemukan.
+                                <i class="fa-solid fa-school-flag" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                                Belum ada kelas terdaftar atau pencarian tidak ditemukan.
                             </td>
                         </tr>
                     <?php endif; ?>
@@ -714,35 +768,37 @@ tr:hover td {
     </main>
 </div>
 
-<!-- Modal Edit Siswa -->
-<div id="modalEdit" class="modal">
+<!-- Modal Form Kelas -->
+<div id="modalForm" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="fa-solid fa-user-pen" style="margin-right: 8px;"></i>Edit Data Siswa</h3>
+            <h3 id="modalTitle"><i class="fa-solid fa-school" style="margin-right: 8px;"></i>Form Kelas</h3>
             <button class="btn-close" onclick="tutupModal()">&times;</button>
         </div>
-        <form method="POST" action="siswa.php">
-            <input type="hidden" name="action" value="update">
+        <form method="POST" action="kelas.php">
+            <input type="hidden" id="form-action" name="action" value="add">
             <input type="hidden" id="edit-id" name="id">
             
             <div class="modal-body">
-                <label for="edit-nis">NIS Siswa</label>
-                <input type="text" id="edit-nis" name="nis" required>
+                <label for="edit-nama">Nama Kelas (Wajib)</label>
+                <input type="text" id="edit-nama" name="nama_kelas" placeholder="Contoh: X RPL 1" required>
 
-                <label for="edit-nama">Nama Lengkap</label>
-                <input type="text" id="edit-nama" name="nama" required>
+                <label for="edit-tingkat">Tingkat</label>
+                <input type="text" id="edit-tingkat" name="tingkat" placeholder="Contoh: X, XI, XII">
 
-                <label for="edit-kelas">Kelas</label>
-                <input type="text" id="edit-kelas" name="kelas" required>
+                <label for="edit-jurusan">Jurusan</label>
+                <input type="text" id="edit-jurusan" name="jurusan" placeholder="Contoh: Rekayasa Perangkat Lunak">
             </div>
 
-            <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Simpan Perubahan</button>
+            <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Simpan</button>
         </form>
     </div>
 </div>
 
 <script>
-const modal = document.getElementById("modalEdit");
+const modal = document.getElementById("modalForm");
+const modalTitle = document.getElementById("modalTitle");
+const formAction = document.getElementById("form-action");
 
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('active');
@@ -771,11 +827,23 @@ function updateThemeUI(theme) {
 // Set correct toggle button UI on page load
 updateThemeUI(savedTheme);
 
-function bukaModal(id, nis, nama, kelas) {
+function bukaModalTambah() {
+    modalTitle.innerHTML = '<i class="fa-solid fa-school" style="margin-right: 8px;"></i>Tambah Kelas Baru';
+    formAction.value = 'add';
+    document.getElementById("edit-id").value = '';
+    document.getElementById("edit-nama").value = '';
+    document.getElementById("edit-tingkat").value = '';
+    document.getElementById("edit-jurusan").value = '';
+    modal.style.display = "flex";
+}
+
+function bukaModalEdit(id, nama_kelas, jurusan, tingkat) {
+    modalTitle.innerHTML = '<i class="fa-solid fa-pen-to-square" style="margin-right: 8px;"></i>Edit Kelas';
+    formAction.value = 'update';
     document.getElementById("edit-id").value = id;
-    document.getElementById("edit-nis").value = nis;
-    document.getElementById("edit-nama").value = nama;
-    document.getElementById("edit-kelas").value = kelas;
+    document.getElementById("edit-nama").value = nama_kelas;
+    document.getElementById("edit-jurusan").value = jurusan;
+    document.getElementById("edit-tingkat").value = tingkat;
     modal.style.display = "flex";
 }
 
@@ -789,9 +857,9 @@ window.onclick = function(event) {
     }
 }
 
-function konfirmasiHapus(id, nama) {
-    if (confirm("Apakah Anda yakin ingin menghapus data siswa '" + nama + "'? Semua riwayat absensi siswa ini juga sebaiknya diperiksa.")) {
-        window.location.href = "siswa.php?action=delete&id=" + id;
+function konfirmasiHapus(id, nama_kelas) {
+    if (confirm("Apakah Anda yakin ingin menghapus kelas '" + nama_kelas + "'? Pastikan kelas ini sudah tidak memiliki siswa.")) {
+        window.location.href = "kelas.php?action=delete&id=" + id;
     }
 }
 </script>

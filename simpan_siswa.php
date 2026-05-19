@@ -11,6 +11,7 @@ if(!$data){
 $nis        = $data['nis']        ?? '';
 $nama       = $data['nama']       ?? '';
 $kelas      = $data['kelas']      ?? '';
+$kelas_id   = $data['kelas_id']   ?? null;
 $wajah      = $data['wajah']       ?? '';  // base64 image
 $descriptor = json_encode($data['descriptor'] ?? []); // array 128 float
 
@@ -27,13 +28,14 @@ try {
 
     if($row){
         // Update jika sudah ada
-        $sql = "UPDATE siswa SET nama = :nama, kelas = :kelas,
+        $sql = "UPDATE siswa SET nama = :nama, kelas = :kelas, kelas_id = :kelas_id,
                 wajah = :wajah, descriptor = :descriptor
                 WHERE nis = :nis";
         $stmt = $koneksi->prepare($sql);
         $sukses = $stmt->execute([
             ':nama' => $nama,
             ':kelas' => $kelas,
+            ':kelas_id' => $kelas_id,
             ':wajah' => $wajah,
             ':descriptor' => $descriptor,
             ':nis' => $nis
@@ -45,13 +47,14 @@ try {
         }
     }else{
         // Insert baru
-        $sql = "INSERT INTO siswa(nis,nama,kelas,wajah,descriptor)
-                VALUES(:nis, :nama, :kelas, :wajah, :descriptor)";
+        $sql = "INSERT INTO siswa(nis,nama,kelas,kelas_id,wajah,descriptor)
+                VALUES(:nis, :nama, :kelas, :kelas_id, :wajah, :descriptor)";
         $stmt = $koneksi->prepare($sql);
         $sukses = $stmt->execute([
             ':nis' => $nis,
             ':nama' => $nama,
             ':kelas' => $kelas,
+            ':kelas_id' => $kelas_id,
             ':wajah' => $wajah,
             ':descriptor' => $descriptor
         ]);

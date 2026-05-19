@@ -1,3 +1,18 @@
+<?php
+include "koneksi.php";
+$siswa_id = isset($_GET['siswa_id']) ? (int)$_GET['siswa_id'] : 0;
+$kelas_id = isset($_GET['kelas_id']) ? (int)$_GET['kelas_id'] : 0;
+
+$siswa = null;
+if ($siswa_id > 0) {
+    $stmt = $koneksi->prepare("SELECT s.nis, s.nama, k.nama_kelas, k.id as kelas_id FROM siswa s LEFT JOIN kelas k ON s.kelas_id = k.id WHERE s.id = :id");
+    $stmt->execute([':id' => $siswa_id]);
+    $siswa = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($siswa) {
+        $kelas_id = $siswa['kelas_id'];
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id" data-theme="dark">
 <head>
@@ -370,11 +385,15 @@ button:disabled {
 </div>
 
 <div class="container">
+    <?php if ($siswa_id > 0 && $kelas_id > 0): ?>
+        <a href="kelas_detail.php?id=<?php echo $kelas_id; ?>" style="display:inline-block; margin-bottom: 20px; color: var(--text-secondary); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Kembali ke Detail Kelas</a>
+    <?php endif; ?>
     <h2><i class="fa-solid fa-user-plus" style="color: var(--primary)"></i>Registrasi Wajah</h2>
 
-    <input type="text" id="nis"   placeholder="NIS Siswa">
-    <input type="text" id="nama"  placeholder="Nama Lengkap">
-    <input type="text" id="kelas" placeholder="Kelas (contoh: X-IPA-1)">
+    <input type="text" id="nis"   placeholder="NIS Siswa" value="<?php echo $siswa ? htmlspecialchars($siswa['nis']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
+    <input type="text" id="nama"  placeholder="Nama Lengkap" value="<?php echo $siswa ? htmlspecialchars($siswa['nama']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
+    <input type="text" id="kelas" placeholder="Kelas (contoh: X-IPA-1)" value="<?php echo $siswa ? htmlspecialchars($siswa['nama_kelas']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
+    <input type="hidden" id="kelas_id" value="<?php echo $kelas_id; ?>">
 
     <div class="video-wrap">
         <video id="video" autoplay muted playsinline></video>
@@ -448,6 +467,7 @@ async function daftar(){
     const nis   = document.getElementById("nis").value.trim();
     const nama  = document.getElementById("nama").value.trim();
     const kelas = document.getElementById("kelas").value.trim();
+    const kelas_id = document.getElementById("kelas_id").value;
 
     if(!nis || !nama || !kelas){
         setStatus("⚠️ Lengkapi semua data terlebih dahulu","err");
@@ -491,16 +511,21 @@ async function daftar(){
     fetch("simpan_siswa.php",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({nis, nama, kelas, wajah:foto, descriptor})
+        body:JSON.stringify({nis, nama, kelas, kelas_id, wajah:foto, descriptor})
     })
     .then(r=>r.text())
     .then(msg=>{
         if(msg.includes("berhasil")){
             setStatus("✅ "+msg,"ok");
-            // Reset form
-            document.getElementById("nis").value  = "";
-            document.getElementById("nama").value = "";
-            document.getElementById("kelas").value= "";
+            // Reset form jika bukan mode edit
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('siswa_id')) {
+                document.getElementById("nis").value  = "";
+                document.getElementById("nama").value = "";
+                document.getElementById("kelas").value= "";
+            } else {
+                setTimeout(() => window.location.href = "kelas_detail.php?id=" + document.getElementById("kelas_id").value, 1500);
+            }
             // Bersihkan overlay setelah 2 detik
             setTimeout(()=>overlay.getContext("2d").clearRect(0,0,overlay.width,overlay.height),2000);
         }else{
