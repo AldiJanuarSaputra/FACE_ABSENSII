@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "koneksi.php";
 $siswa_id = isset($_GET['siswa_id']) ? (int)$_GET['siswa_id'] : 0;
 $kelas_id = isset($_GET['kelas_id']) ? (int)$_GET['kelas_id'] : 0;
@@ -394,6 +395,7 @@ button:disabled {
     <input type="text" id="nama"  placeholder="Nama Lengkap" value="<?php echo $siswa ? htmlspecialchars($siswa['nama']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
     <input type="text" id="kelas" placeholder="Kelas (contoh: X-IPA-1)" value="<?php echo $siswa ? htmlspecialchars($siswa['nama_kelas']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
     <input type="hidden" id="kelas_id" value="<?php echo $kelas_id; ?>">
+    <input type="password" id="password" placeholder="Buat Kata Sandi (Password)">
 
     <div class="video-wrap">
         <video id="video" autoplay muted playsinline></video>
@@ -403,7 +405,14 @@ button:disabled {
     <canvas id="canvas" style="display:none;" width="320" height="240"></canvas>
 
     <button id="btnDaftar" onclick="daftar()" disabled><i class="fa-solid fa-cloud-arrow-up"></i>Daftar Sekarang</button>
-    <a href="absensi.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-camera-retro"></i>Ke Halaman Absensi</button></a>
+    <?php if (isset($_SESSION['admin_user'])): ?>
+        <a href="index.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Ke Dasbor Admin</button></a>
+    <?php elseif (isset($_SESSION['siswa_user'])): ?>
+        <a href="siswa_dashboard.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-house" style="margin-right: 6px;"></i>Ke Portal Siswa</button></a>
+    <?php else: ?>
+        <a href="login.php" style="text-decoration:none;"><button class="btn-secondary" type="button"><i class="fa-solid fa-right-to-bracket" style="margin-right: 6px;"></i>Ke Halaman Login</button></a>
+    <?php endif; ?>
+    <a href="absensi.php" style="text-decoration:none;"><button class="btn-secondary" type="button" style="margin-top: 5px;"><i class="fa-solid fa-camera-retro" style="margin-right: 6px;"></i>Ke Halaman Absensi</button></a>
 
     <p id="hasil" class="info">Memuat sistem...</p>
 </div>
@@ -464,13 +473,14 @@ async function loadModels(){
 
 // ── Registrasi ─────────────────────────────────────────
 async function daftar(){
-    const nis   = document.getElementById("nis").value.trim();
-    const nama  = document.getElementById("nama").value.trim();
-    const kelas = document.getElementById("kelas").value.trim();
-    const kelas_id = document.getElementById("kelas_id").value;
+    const nis      = document.getElementById("nis").value.trim();
+    const nama     = document.getElementById("nama").value.trim();
+    const kelas    = document.getElementById("kelas").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const kelas_id = document.getElementById("kelas_id") ? document.getElementById("kelas_id").value : null;
 
-    if(!nis || !nama || !kelas){
-        setStatus("⚠️ Lengkapi semua data terlebih dahulu","err");
+    if(!nis || !nama || !kelas || !password){
+        setStatus("⚠️ Lengkapi semua data dan password terlebih dahulu","err");
         return;
     }
     if(!modelsReady){
@@ -511,7 +521,7 @@ async function daftar(){
     fetch("simpan_siswa.php",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({nis, nama, kelas, kelas_id, wajah:foto, descriptor})
+        body:JSON.stringify({nis, nama, kelas, kelas_id, password, wajah:foto, descriptor})
     })
     .then(r=>r.text())
     .then(msg=>{
@@ -523,6 +533,7 @@ async function daftar(){
                 document.getElementById("nis").value  = "";
                 document.getElementById("nama").value = "";
                 document.getElementById("kelas").value= "";
+                document.getElementById("password").value= "";
             } else {
                 setTimeout(() => window.location.href = "kelas_detail.php?id=" + document.getElementById("kelas_id").value, 1500);
             }

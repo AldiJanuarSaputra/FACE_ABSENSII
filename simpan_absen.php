@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "koneksi.php";
 
 // Set timezone ke Waktu Indonesia Barat (WIB) agar jam sinkron
