@@ -109,23 +109,24 @@ try {
 :root, html[data-theme="dark"] {
     --bg-dark: #090f1d;
     --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
-    --card-bg: rgba(15, 23, 42, 0.55);
-    --card-border: rgba(255, 255, 255, 0.06);
+    --card-bg: rgba(15, 23, 42, 0.65);
+    --card-border: rgba(99, 102, 241, 0.28); /* Outline komponen ultra-jelas bernuansa Indigo */
     --primary: #6366f1;
     --primary-hover: #4f46e5;
-    --primary-glow: rgba(99, 102, 241, 0.2);
+    --primary-glow: rgba(99, 102, 241, 0.3);
     --secondary: #0ea5e9;
     --secondary-hover: #0284c7;
-    --secondary-glow: rgba(14, 165, 233, 0.2);
+    --secondary-glow: rgba(14, 165, 233, 0.3);
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --sidebar-bg: rgba(15, 23, 42, 0.4);
-    --sidebar-border: rgba(255, 255, 255, 0.05);
-    --active-menu: rgba(99, 102, 241, 0.15);
-    --input-bg: rgba(255, 255, 255, 0.04);
+    --sidebar-bg: rgba(10, 15, 30, 0.85);
+    --sidebar-border: rgba(99, 102, 241, 0.25); /* Pembatas sidebar ultra-jelas */
+    --active-menu: rgba(99, 102, 241, 0.2);
+    --input-bg: rgba(10, 15, 30, 0.6);
+    --row-border: rgba(99, 102, 241, 0.15); /* Garis pembatas baris tabel ultra-jelas */
 }
 
 html[data-theme="light"] {
@@ -148,6 +149,7 @@ html[data-theme="light"] {
     --sidebar-border: rgba(99, 102, 241, 0.08);
     --active-menu: rgba(79, 70, 229, 0.08);
     --input-bg: rgba(99, 102, 241, 0.03);
+    --row-border: rgba(0, 0, 0, 0.05); /* Garis pembatas baris tabel terang */
 }
 
 body {
@@ -498,7 +500,7 @@ th {
 td {
     padding: 16px 20px;
     font-size: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--row-border);
 }
 
 tr:hover td {

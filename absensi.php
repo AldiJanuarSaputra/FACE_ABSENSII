@@ -45,19 +45,20 @@ try {
 :root, html[data-theme="dark"] {
     --bg-dark: #090f1d;
     --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #090f1d 100%);
-    --card-bg: rgba(15, 23, 42, 0.55);
-    --card-border: rgba(255, 255, 255, 0.06);
+    --card-bg: rgba(15, 23, 42, 0.65);
+    --card-border: rgba(99, 102, 241, 0.28); /* Outline komponen ultra-jelas bernuansa Indigo */
     --primary: #6366f1;
     --primary-hover: #4f46e5;
-    --primary-glow: rgba(99, 102, 241, 0.2);
+    --primary-glow: rgba(99, 102, 241, 0.3);
     --secondary: #0ea5e9;
     --secondary-hover: #0284c7;
-    --secondary-glow: rgba(14, 165, 233, 0.2);
+    --secondary-glow: rgba(14, 165, 233, 0.3);
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
+    --row-border: rgba(99, 102, 241, 0.15); /* Garis pembatas baris tabel ultra-jelas */
 }
 
 html[data-theme="light"] {
@@ -76,6 +77,7 @@ html[data-theme="light"] {
     --warning: #f59e0b;
     --text-primary: #0f172a;
     --text-secondary: #475569;
+    --row-border: rgba(0, 0, 0, 0.05); /* Garis pembatas baris tabel terang */
 }
 
 /* Floating theme toggle button */
@@ -381,7 +383,7 @@ button:disabled {
 #mini-rekap-box td {
     padding: 8px 6px;
     color: var(--text-primary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--row-border);
 }
 
 /* Badges */
