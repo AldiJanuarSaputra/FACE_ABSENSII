@@ -690,11 +690,11 @@ tr:hover td {
                                 <td style="font-weight: 700; color: var(--secondary);"><?php echo htmlspecialchars($row['nis']); ?></td>
                                 <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nama']); ?></td>
                                 <td><span style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
-                                <td style="text-align: center;">
-                                    <button class="btn-edit" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', '<?php echo addslashes($row['kelas']); ?>')">
+                                <td style="text-align: center; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; border-bottom: none;">
+                                    <button class="btn-edit" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', '<?php echo addslashes($row['kelas']); ?>')">
                                         <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Edit
                                     </button>
-                                    <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
+                                    <button class="btn-delete" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
                                         <i class="fa-solid fa-trash" style="margin-right: 5px;"></i>Hapus
                                     </button>
                                 </td>

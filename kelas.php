@@ -741,14 +741,14 @@ tr:hover td {
                                         <?php echo $row['total_wajah']; ?> / <?php echo $row['total_siswa']; ?> (<?php echo $persen; ?>%)
                                     </div>
                                 </td>
-                                <td style="text-align: center;">
-                                    <a href="kelas_detail.php?id=<?php echo $row['id']; ?>" class="btn-edit" style="background: rgba(99, 102, 241, 0.12); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2); text-decoration: none;">
+                                <td style="text-align: center; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; border-bottom: none;">
+                                    <a href="kelas_detail.php?id=<?php echo $row['id']; ?>" class="btn-edit" style="background: rgba(99, 102, 241, 0.12); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2); text-decoration: none; padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;">
                                         <i class="fa-solid fa-eye" style="margin-right: 5px;"></i>Detail
                                     </a>
-                                    <button class="btn-edit" onclick="bukaModalEdit(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama_kelas']); ?>', '<?php echo addslashes($row['jurusan']); ?>', '<?php echo addslashes($row['tingkat']); ?>')">
+                                    <button class="btn-edit" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="bukaModalEdit(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama_kelas']); ?>', '<?php echo addslashes($row['jurusan']); ?>', '<?php echo addslashes($row['tingkat']); ?>')">
                                         <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Edit
                                     </button>
-                                    <button class="btn-delete" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama_kelas']); ?>')">
+                                    <button class="btn-delete" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama_kelas']); ?>')">
                                         <i class="fa-solid fa-trash" style="margin-right: 5px;"></i>Hapus
                                     </button>
                                 </td>

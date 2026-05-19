@@ -740,22 +740,22 @@ tr:hover td {
                                 </td>
                                 <td style="font-weight: 700; color: var(--secondary);"><?php echo htmlspecialchars($row['nis']); ?></td>
                                 <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nama']); ?></td>
-                                <td style="text-align: center;">
+                                <td style="text-align: center; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; border-bottom: none;">
                                     <?php if (empty($row['wajah'])): ?>
-                                        <a href="register.php?siswa_id=<?php echo $row['id']; ?>&kelas_id=<?php echo $kelas_id; ?>" class="btn-edit" style="background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); text-decoration: none; padding: 6px 10px;">
+                                        <a href="register.php?siswa_id=<?php echo $row['id']; ?>&kelas_id=<?php echo $kelas_id; ?>" class="btn-edit" style="background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); text-decoration: none; padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;">
                                             <i class="fa-solid fa-camera" style="margin-right: 5px;"></i>Scan
                                         </a>
                                     <?php else: ?>
-                                        <a href="register.php?siswa_id=<?php echo $row['id']; ?>&kelas_id=<?php echo $kelas_id; ?>" class="btn-edit" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); text-decoration: none; padding: 6px 10px;">
+                                        <a href="register.php?siswa_id=<?php echo $row['id']; ?>&kelas_id=<?php echo $kelas_id; ?>" class="btn-edit" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); text-decoration: none; padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;">
                                             <i class="fa-solid fa-camera-rotate" style="margin-right: 5px;"></i>Rescan
                                         </a>
                                     <?php endif; ?>
                                     
-                                    <button class="btn-edit" style="padding: 6px 10px;" onclick="bukaModalEdit(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>')">
-                                        <i class="fa-solid fa-pen" style="margin-right: 2px;"></i>Edit
+                                    <button class="btn-edit" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="bukaModalEdit(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>')">
+                                        <i class="fa-solid fa-pen" style="margin-right: 5px;"></i>Edit
                                     </button>
-                                    <button class="btn-delete" style="padding: 6px 10px;" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
-                                        <i class="fa-solid fa-trash"></i>
+                                    <button class="btn-delete" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
+                                        <i class="fa-solid fa-trash" style="margin-right: 5px;"></i>Hapus
                                     </button>
                                 </td>
                             </tr>
