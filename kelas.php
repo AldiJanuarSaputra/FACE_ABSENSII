@@ -648,6 +648,9 @@ tr:hover td {
                     <a href="index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
                 </li>
                 <li class="menu-item active">
+                    <a href="kelas.php"><i class="fa-solid fa-school"></i>Manajemen Kelas</a>
+                </li>
+                <li class="menu-item">
                     <a href="siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
                 </li>
                 <li class="menu-item">

@@ -20,22 +20,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
 
 // ── 2. Proses Edit (Update) ───────────────────────────
 if (isset($_POST['action']) && $_POST['action'] === 'update') {
-    $id    = (int)$_POST['id'];
-    $nama  = trim($_POST['nama']);
-    $kelas = trim($_POST['kelas']);
-    $nis   = trim($_POST['nis']);
+    $id       = (int)$_POST['id'];
+    $nama     = trim($_POST['nama']);
+    $kelas_id = (int)$_POST['kelas_id'];
+    $nis      = trim($_POST['nis']);
 
-    if (!$nama || !$kelas || !$nis) {
+    if (!$nama || !$kelas_id || !$nis) {
         $pesan = "Semua kolom edit harus diisi!";
         $tipePesan = "err";
     } else {
         try {
-            $stmt = $koneksi->prepare("UPDATE siswa SET nis = :nis, nama = :nama, kelas = :kelas WHERE id = :id");
+            // Ambil nama kelas untuk kelestarian kolom text 'kelas' (jika masih diperlukan)
+            $stmtK = $koneksi->prepare("SELECT nama_kelas FROM kelas WHERE id = :id");
+            $stmtK->execute([':id' => $kelas_id]);
+            $nama_kelas = $stmtK->fetchColumn() ?: '';
+
+            $stmt = $koneksi->prepare("UPDATE siswa SET nis = :nis, nama = :nama, kelas = :kelas, kelas_id = :kelas_id WHERE id = :id");
             $stmt->execute([
-                ':nis'   => $nis,
-                ':nama'  => $nama,
-                ':kelas' => $kelas,
-                ':id'    => $id
+                ':nis'      => $nis,
+                ':nama'     => $nama,
+                ':kelas'    => $nama_kelas,
+                ':kelas_id' => $kelas_id,
+                ':id'       => $id
             ]);
             $pesan = "Data siswa (NIS: $nis) berhasil diperbarui!";
             $tipePesan = "ok";
@@ -49,13 +55,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'update') {
 // ── 3. Proses Ambil Data & Filter (Read) ──────────────
 $cari = isset($_GET['cari']) ? trim($_GET['cari']) : '';
 $listSiswa = [];
+$listKelas = [];
 
 try {
+    // Ambil list semua kelas untuk dropdown
+    $stmtK = $koneksi->query("SELECT id, nama_kelas FROM kelas ORDER BY nama_kelas ASC");
+    $listKelas = $stmtK->fetchAll(PDO::FETCH_ASSOC);
+
     if ($cari !== '') {
-        $stmt = $koneksi->prepare("SELECT id, nis, nama, kelas, wajah FROM siswa WHERE nama ILIKE :cari OR nis ILIKE :cari ORDER BY nama ASC");
+        $stmt = $koneksi->prepare("SELECT s.id, s.nis, s.nama, COALESCE(k.nama_kelas, s.kelas) as kelas, s.kelas_id, s.wajah FROM siswa s LEFT JOIN kelas k ON s.kelas_id = k.id WHERE s.nama ILIKE :cari OR s.nis ILIKE :cari ORDER BY s.nama ASC");
         $stmt->execute([':cari' => "%$cari%"]);
     } else {
-        $stmt = $koneksi->query("SELECT id, nis, nama, kelas, wajah FROM siswa ORDER BY nama ASC");
+        $stmt = $koneksi->query("SELECT s.id, s.nis, s.nama, COALESCE(k.nama_kelas, s.kelas) as kelas, s.kelas_id, s.wajah FROM siswa s LEFT JOIN kelas k ON s.kelas_id = k.id ORDER BY s.nama ASC");
     }
     $listSiswa = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -691,7 +702,7 @@ tr:hover td {
                                 <td style="font-weight: 600;"><?php echo htmlspecialchars($row['nama']); ?></td>
                                 <td><span style="background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
                                 <td style="text-align: center; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; border-bottom: none;">
-                                    <button class="btn-edit" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', '<?php echo addslashes($row['kelas']); ?>')">
+                                    <button class="btn-edit" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="bukaModal(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nis']); ?>', '<?php echo addslashes($row['nama']); ?>', <?php echo (int)$row['kelas_id']; ?>)">
                                         <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Edit
                                     </button>
                                     <button class="btn-delete" style="padding: 6px 12px; margin: 0; display: inline-flex; align-items: center;" onclick="konfirmasiHapus(<?php echo $row['id']; ?>, '<?php echo addslashes($row['nama']); ?>')">
@@ -731,9 +742,13 @@ tr:hover td {
 
                 <label for="edit-nama">Nama Lengkap</label>
                 <input type="text" id="edit-nama" name="nama" required>
-
                 <label for="edit-kelas">Kelas</label>
-                <input type="text" id="edit-kelas" name="kelas" required>
+                <select id="edit-kelas" name="kelas_id" required style="width: 100%; padding: 11px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--card-border); border-radius: 10px; color: #fff; outline: none; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;">
+                    <option value="">-- Pilih Kelas --</option>
+                    <?php foreach ($listKelas as $k): ?>
+                        <option value="<?php echo $k['id']; ?>"><?php echo htmlspecialchars($k['nama_kelas']); ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
             <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Simpan Perubahan</button>
@@ -771,11 +786,11 @@ function updateThemeUI(theme) {
 // Set correct toggle button UI on page load
 updateThemeUI(savedTheme);
 
-function bukaModal(id, nis, nama, kelas) {
+function bukaModal(id, nis, nama, kelasId) {
     document.getElementById("edit-id").value = id;
     document.getElementById("edit-nis").value = nis;
     document.getElementById("edit-nama").value = nama;
-    document.getElementById("edit-kelas").value = kelas;
+    document.getElementById("edit-kelas").value = kelasId;
     modal.style.display = "flex";
 }
 
