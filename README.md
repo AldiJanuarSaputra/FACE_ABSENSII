@@ -19,17 +19,27 @@ Aplikasi ini didesain dengan antarmuka **Premium Dark Theme** yang modern, mengg
    * Penandaan status kehadiran secara otomatis (Hadir / Lambat) berdasarkan jam masuk siswa.
 
 2. **Daftar & Registrasi Wajah**:
-   * Pendaftaran siswa baru dengan menginput NIS, Nama, dan Kelas.
+   * Pendaftaran siswa baru dengan menginput NIS, Nama, Kelas, Tingkat, dan Jurusan.
    * Proses pemindaian wajah (*face mapping*) untuk mengekstrak struktur landmark wajah unik.
    * Penyimpanan wajah berupa foto *thumbnail* (base64) dan matriks *descriptor* ke database.
 
-3. **Kelola Data Siswa**:
-   * Panel admin untuk menampilkan daftar siswa yang telah terdaftar lengkap beserta foto wajah mereka.
-   * Dilengkapi fitur pencarian cepat serta hapus data siswa secara real-time.
+3. **Sistem Login Multi-Role (Portal Absensi)**:
+   * Hak akses terpisah untuk **Admin/Guru** (untuk manajemen data) dan **Siswa** (untuk memantau absensi pribadi).
+   * Fitur pendaftaran akun Admin/Guru baru.
 
-4. **Rekapitulasi Absensi**:
+4. **Dashboard Siswa**:
+   * Halaman khusus bagi siswa untuk memantau data profil dan riwayat log kehadiran mereka sendiri secara mandiri.
+
+5. **Manajemen Kelas & Jurusan**:
+   * Panel Admin untuk mengelola data kelas, tingkat (X, XI, XII), dan jurusan secara fleksibel.
+   * Halaman detail kelas untuk melihat daftar siswa di setiap kelas.
+
+6. **Rekapitulasi Absensi**:
    * Laporan riwayat absensi harian yang diperbarui secara dinamis.
    * Statistik ringkasan jumlah kehadiran siswa untuk mempermudah monitoring.
+
+7. **Dukungan Progressive Web App (PWA)**:
+   * Mendukung pemasangan aplikasi langsung di perangkat (*Installable App*) dengan dukungan Service Worker offline.
 
 ---
 
@@ -44,32 +54,63 @@ Aplikasi ini didesain dengan antarmuka **Premium Dark Theme** yang modern, mengg
 
 ## 📊 Struktur Database (PostgreSQL)
 
-Skema database diimplementasikan menggunakan dua tabel utama:
+Skema database diimplementasikan menggunakan empat tabel utama:
 
-### 1. Tabel `siswa`
-Menyimpan informasi identitas siswa dan data *face descriptor* untuk pencocokan wajah.
+### 1. Tabel `kelas`
+Menyimpan data nama kelas untuk mengelompokkan siswa secara dinamis.
 ```sql
-CREATE TABLE siswa (
+CREATE TABLE kelas (
     id SERIAL PRIMARY KEY,
-    nis VARCHAR(20) UNIQUE,
-    nama VARCHAR(100),
-    kelas VARCHAR(20),
-    wajah TEXT,         -- Menyimpan data gambar thumbnail (base64)
-    descriptor TEXT     -- Menyimpan array 128 dimensi descriptor wajah (JSON)
+    nama_kelas VARCHAR(50) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### 2. Tabel `absensi`
+### 2. Tabel `admin`
+Menyimpan data pengguna dengan hak akses admin atau guru.
+```sql
+CREATE TABLE admin (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nama VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'guru')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 3. Tabel `siswa`
+Menyimpan informasi identitas siswa, password untuk login mandiri, dan data *face descriptor* untuk pencocokan wajah.
+```sql
+CREATE TABLE siswa (
+    id SERIAL PRIMARY KEY,
+    nis VARCHAR(20) NOT NULL UNIQUE,
+    nama VARCHAR(100) NOT NULL,
+    kelas VARCHAR(20),
+    kelas_id INTEGER REFERENCES kelas(id) ON DELETE SET NULL,
+    tingkat VARCHAR(10),
+    jurusan VARCHAR(50),
+    wajah TEXT,         -- Menyimpan data gambar thumbnail (base64)
+    descriptor TEXT,    -- Menyimpan array 128 dimensi descriptor wajah (JSON)
+    password VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 4. Tabel `absensi`
 Menyimpan riwayat log absensi harian siswa yang teridentifikasi oleh sistem.
 ```sql
 CREATE TABLE absensi (
     id SERIAL PRIMARY KEY,
-    nis VARCHAR(20),
-    nama VARCHAR(100),
+    nis VARCHAR(20) NOT NULL,
+    nama VARCHAR(100) NOT NULL,
     kelas VARCHAR(20),
-    tanggal DATE,
-    jam TIME,
-    status VARCHAR(20)  -- 'Hadir' atau 'Lambat'
+    tingkat VARCHAR(10),
+    jurusan VARCHAR(50),
+    tanggal DATE NOT NULL DEFAULT CURRENT_DATE,
+    jam TIME NOT NULL DEFAULT CURRENT_TIME,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -81,18 +122,28 @@ Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini:
 
 | Nama File | Deskripsi / Fungsi |
 | :--- | :--- |
-| `index.php` | Halaman menu utama / navigasi dashboard absensi. |
-| `absensi.php` | Halaman untuk memindai wajah siswa menggunakan kamera (*Scan Absensi*). |
-| `register.php` | Halaman untuk meregistrasikan wajah dan identitas siswa baru. |
-| `siswa.php` | Panel kelola data siswa terdaftar (menampilkan daftar, pencarian, dan hapus). |
-| `rekap.php` | Halaman rekapitulasi data kehadiran siswa. |
-| `koneksi.php` | Konfigurasi koneksi database PostgreSQL (Supabase) via PHP PDO. |
-| `simpan_siswa.php` | API server untuk menyimpan data siswa baru ke database. |
-| `simpan_absen.php` | API server untuk mencatat log absensi siswa ke database. |
-| `get_siswa.php` | API server untuk mengambil seluruh data *descriptor* wajah untuk proses pencocokan. |
-| `database.sql` | Skema struktur tabel database SQL. |
-| `js/` | Folder berisi pustaka `face-api.min.js`. |
-| `models/` | Folder berisi file-file weights model AI untuk mendeteksi wajah dan landmark. |
+| `index.php` | Halaman menu utama / dashboard navigasi utama absensi. |
+| `absensi.php` | Halaman scan wajah real-time (*Live Camera*) untuk absensi siswa. |
+| `register.php` | Halaman registrasi wajah siswa baru beserta pemetaan landmark wajah. |
+| `login.php` | Halaman login multi-user (Admin, Guru, Siswa). |
+| `logout.php` | Proses keluar akun (destroy session). |
+| `register_admin.php` | Halaman khusus untuk meregistrasikan akun Admin/Guru baru. |
+| `siswa.php` | Panel manajemen siswa (pencarian, edit, hapus, dan detail). |
+| `siswa_dashboard.php` | Halaman riwayat absensi personal siswa yang login secara mandiri. |
+| `kelas.php` | Panel manajemen kelas (tambah kelas, kelola tingkat, dan jurusan). |
+| `kelas_detail.php` | Halaman rincian daftar siswa berdasarkan kelas yang dipilih. |
+| `rekap.php` | Halaman rekapitulasi kehadiran dengan filter pencarian dan statistik. |
+| `koneksi.php` | File konfigurasi koneksi database PostgreSQL (Supabase) dengan PHP PDO. |
+| `simpan_siswa.php` | Endpoint API untuk menyimpan data profil dan descriptor wajah siswa baru. |
+| `simpan_absen.php` | Endpoint API untuk mencatat log presensi kehadiran siswa. |
+| `get_siswa.php` | Endpoint API untuk menarik descriptor wajah semua siswa ke client-side. |
+| `migrate.php` | Skema migrasi untuk memperbarui database secara otomatis. |
+| `migrate_tingkat_jurusan.php` | Skema migrasi khusus menambahkan kolom tingkat dan jurusan. |
+| `manifest.json` | Konfigurasi manifest untuk kemampuan Progressive Web App (PWA). |
+| `sw.js` | Service Worker untuk caching aset dan dukungan PWA offline. |
+| `database.sql` | File SQL mentah yang berisi skema awal basis data. |
+| `js/` | Direktori penyimpanan library JavaScript seperti `face-api.min.js`. |
+| `models/` | Direktori file bobot (*weights*) model AI FaceAPI.js. |
 
 ---
 
@@ -110,16 +161,16 @@ Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini:
 
 ## 👥 Kelompok / Tim Pengembang
 
-Aplikasi ini dikembangkan oleh Kelompok:
+Aplikasi ini dikembangkan oleh:
 
 | No | Nama Lengkap | NIM | Peran / Kontribusi |
 | :--- | :--- | :--- | :--- |
-| 1 | **Aldi Januar Saputra** | - | - |
-| 2 | **Veve** | - | - |
-| 3 | **[Nama Anggota 3]** | - | - |
-| 4 | **[Nama Anggota 4]** | - | - |
-| 5 | **[Nama Anggota 5]** | - | - |
-| 6 | **[Nama Anggota 6]** | - | - |
+| 1 | **Aldi Januar Saputra** | - | Full-Stack & UI/UX Designer |
+| 2 | **Veve** | - | Frontend & Backend Developer |
+| 3 | **Desta** | - | Collaborator / Developer |
+| 4 | **Dwi** | - | Collaborator / Developer |
+| 5 | **Fiis** | - | Collaborator / Developer |
+| 6 | **Hasbi** | - | Collaborator / Developer |
 
 ---
 
