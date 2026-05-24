@@ -395,6 +395,13 @@ button:disabled {
     <input type="text" id="nama"  placeholder="Nama Lengkap" value="<?php echo $siswa ? htmlspecialchars($siswa['nama']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
     <input type="text" id="kelas" placeholder="Kelas (contoh: X-IPA-1)" value="<?php echo $siswa ? htmlspecialchars($siswa['nama_kelas']) : ''; ?>" <?php echo $siswa ? 'readonly style="opacity:0.7; cursor:not-allowed;"' : ''; ?>>
     <input type="hidden" id="kelas_id" value="<?php echo $kelas_id; ?>">
+    <select id="tingkat" style="width:100%; padding:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; color:#fff; font-size:14px; font-family:'Plus Jakarta Sans',sans-serif; outline:none; margin-bottom:10px;">
+        <option value="" disabled selected>Pilih Tingkat</option>
+        <option value="X">X (Kelas 10)</option>
+        <option value="XI">XI (Kelas 11)</option>
+        <option value="XII">XII (Kelas 12)</option>
+    </select>
+    <input type="text" id="jurusan" placeholder="Jurusan (contoh: IPA, IPS, TKJ, RPL)">
     <input type="password" id="password" placeholder="Buat Kata Sandi (Password)">
 
     <div class="video-wrap">
@@ -425,6 +432,7 @@ const hasil    = document.getElementById("hasil");
 const btnDaftar = document.getElementById("btnDaftar");
 
 let modelsReady = false;
+let isRealtimeTracking = false;
 
 // ── Splash screen hide ─────────────────────────────────
 function hideSplash() {
@@ -476,6 +484,8 @@ async function daftar(){
     const nis      = document.getElementById("nis").value.trim();
     const nama     = document.getElementById("nama").value.trim();
     const kelas    = document.getElementById("kelas").value.trim();
+    const tingkat  = document.getElementById("tingkat").value;
+    const jurusan  = document.getElementById("jurusan").value.trim();
     const password = document.getElementById("password").value.trim();
     const kelas_id = document.getElementById("kelas_id") ? document.getElementById("kelas_id").value : null;
 
@@ -489,15 +499,18 @@ async function daftar(){
     }
 
     btnDaftar.disabled = true;
+    isRealtimeTracking = false; // Hentikan tracking real-time sementara
     setStatus("🔍 Mendeteksi wajah...","info");
 
     const detection = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:0.3}))
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:0.2}))
         .withFaceLandmarks()
         .withFaceDescriptor();
 
     if(!detection){
         setStatus("❌ Wajah tidak terdeteksi, pastikan wajah terlihat jelas","err");
+        isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+        startRealtimeTracking();
         btnDaftar.disabled = false;
         return;
     }
@@ -521,7 +534,7 @@ async function daftar(){
     fetch("simpan_siswa.php",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({nis, nama, kelas, kelas_id, password, wajah:foto, descriptor})
+        body:JSON.stringify({nis, nama, kelas, kelas_id, tingkat, jurusan, password, wajah:foto, descriptor})
     })
     .then(r=>r.text())
     .then(msg=>{
@@ -542,10 +555,14 @@ async function daftar(){
         }else{
             setStatus("❌ "+msg,"err");
         }
+        isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+        startRealtimeTracking();
         btnDaftar.disabled = false;
     })
     .catch(()=>{
         setStatus("❌ Gagal menghubungi server","err");
+        isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+        startRealtimeTracking();
         btnDaftar.disabled = false;
     });
 }
@@ -586,10 +603,42 @@ function updateThemeUI(theme) {
 // Set correct toggle button UI on page load
 updateThemeUI(savedTheme);
 
+// ── Realtime Face Tracking Feedback ────────────────────
+async function startRealtimeTracking() {
+    if (!isRealtimeTracking) return;
+    
+    try {
+        const detection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize: 320, scoreThreshold: 0.25}))
+            .withFaceLandmarks();
+            
+        // Bersihkan overlay
+        const ctx = overlay.getContext("2d");
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        
+        if (detection && isRealtimeTracking) {
+            const dims = faceapi.matchDimensions(overlay, video, true);
+            const resized = faceapi.resizeResults(detection, dims);
+            faceapi.draw.drawDetections(overlay, resized);
+            faceapi.draw.drawFaceLandmarks(overlay, resized);
+        }
+    } catch (e) {
+        console.error("Error in realtime tracking loop:", e);
+    }
+    
+    if (isRealtimeTracking) {
+        setTimeout(startRealtimeTracking, 120);
+    }
+}
+
 // ── Init ───────────────────────────────────────────────
 (async()=>{
     const camOk = await startCamera();
-    if(camOk) await loadModels();
+    if(camOk) {
+        await loadModels();
+        isRealtimeTracking = true;
+        startRealtimeTracking();
+    }
 })();
 </script>
 

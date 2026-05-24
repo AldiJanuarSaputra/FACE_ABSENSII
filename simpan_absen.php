@@ -22,6 +22,21 @@ if(!$nis || !$nama){
     exit;
 }
 
+// Ambil data tingkat & jurusan dari tabel siswa
+$tingkat = '';
+$jurusan = '';
+try {
+    $stmtSiswa = $koneksi->prepare("SELECT tingkat, jurusan FROM siswa WHERE nis = :nis LIMIT 1");
+    $stmtSiswa->execute([':nis' => $nis]);
+    $dataSiswa = $stmtSiswa->fetch(PDO::FETCH_ASSOC);
+    if ($dataSiswa) {
+        $tingkat = $dataSiswa['tingkat'] ?? '';
+        $jurusan = $dataSiswa['jurusan'] ?? '';
+    }
+} catch (PDOException $e) {
+    // Lanjutkan tanpa tingkat/jurusan jika gagal
+}
+
 $tanggal = date("Y-m-d");
 $jam     = date("H:i:s");
 
@@ -42,6 +57,8 @@ try {
             "nis"     => $nis,
             "nama"    => $nama,
             "kelas"   => $kelas,
+            "tingkat" => $tingkat,
+            "jurusan" => $jurusan,
             "waktu"   => $row['jam'],
             "status"  => $row['status']
         ]);
@@ -56,13 +73,15 @@ try {
         $status = "Terlambat";
     }
 
-    $sql = "INSERT INTO absensi(nis,nama,kelas,tanggal,jam,status)
-            VALUES(:nis, :nama, :kelas, :tanggal, :jam, :status)";
+    $sql = "INSERT INTO absensi(nis,nama,kelas,tingkat,jurusan,tanggal,jam,status)
+            VALUES(:nis, :nama, :kelas, :tingkat, :jurusan, :tanggal, :jam, :status)";
     $stmt = $koneksi->prepare($sql);
     $sukses = $stmt->execute([
         ':nis' => $nis,
         ':nama' => $nama,
         ':kelas' => $kelas,
+        ':tingkat' => $tingkat,
+        ':jurusan' => $jurusan,
         ':tanggal' => $tanggal,
         ':jam' => $jam,
         ':status' => $status
@@ -75,6 +94,8 @@ try {
             "nis"     => $nis,
             "nama"    => $nama,
             "kelas"   => $kelas,
+            "tingkat" => $tingkat,
+            "jurusan" => $jurusan,
             "waktu"   => $jam,
             "status"  => $status
         ]);

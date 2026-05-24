@@ -12,7 +12,9 @@ if(!$data){
 $nis        = $data['nis']        ?? '';
 $nama       = $data['nama']       ?? '';
 $kelas      = $data['kelas']      ?? '';
-$kelas_id   = $data['kelas_id']   ?? null;
+$kelas_id   = !empty($data['kelas_id']) ? (int)$data['kelas_id'] : null;
+$tingkat    = $data['tingkat']    ?? '';
+$jurusan    = $data['jurusan']    ?? '';
 $password   = $data['password']   ?? '';
 $wajah      = $data['wajah']       ?? '';  // base64 image
 $descriptor = json_encode($data['descriptor'] ?? []); // array 128 float
@@ -33,6 +35,7 @@ try {
         if (!empty($password)) {
             $hashed = password_hash($password, PASSWORD_BCRYPT);
             $sql = "UPDATE siswa SET nama = :nama, kelas = :kelas, kelas_id = :kelas_id,
+                    tingkat = :tingkat, jurusan = :jurusan,
                     wajah = :wajah, descriptor = :descriptor, password = :password
                     WHERE nis = :nis";
             $stmt = $koneksi->prepare($sql);
@@ -40,6 +43,8 @@ try {
                 ':nama' => $nama,
                 ':kelas' => $kelas,
                 ':kelas_id' => $kelas_id,
+                ':tingkat' => $tingkat,
+                ':jurusan' => $jurusan,
                 ':wajah' => $wajah,
                 ':descriptor' => $descriptor,
                 ':password' => $hashed,
@@ -47,6 +52,7 @@ try {
             ]);
         } else {
             $sql = "UPDATE siswa SET nama = :nama, kelas = :kelas, kelas_id = :kelas_id,
+                    tingkat = :tingkat, jurusan = :jurusan,
                     wajah = :wajah, descriptor = :descriptor
                     WHERE nis = :nis";
             $stmt = $koneksi->prepare($sql);
@@ -54,6 +60,8 @@ try {
                 ':nama' => $nama,
                 ':kelas' => $kelas,
                 ':kelas_id' => $kelas_id,
+                ':tingkat' => $tingkat,
+                ':jurusan' => $jurusan,
                 ':wajah' => $wajah,
                 ':descriptor' => $descriptor,
                 ':nis' => $nis
@@ -67,14 +75,16 @@ try {
     }else{
         // Insert baru
         $hashed = !empty($password) ? password_hash($password, PASSWORD_BCRYPT) : null;
-        $sql = "INSERT INTO siswa(nis,nama,kelas,kelas_id,wajah,descriptor,password)
-                VALUES(:nis, :nama, :kelas, :kelas_id, :wajah, :descriptor, :password)";
+        $sql = "INSERT INTO siswa(nis,nama,kelas,kelas_id,tingkat,jurusan,wajah,descriptor,password)
+                VALUES(:nis, :nama, :kelas, :kelas_id, :tingkat, :jurusan, :wajah, :descriptor, :password)";
         $stmt = $koneksi->prepare($sql);
         $sukses = $stmt->execute([
             ':nis' => $nis,
             ':nama' => $nama,
             ':kelas' => $kelas,
             ':kelas_id' => $kelas_id,
+            ':tingkat' => $tingkat,
+            ':jurusan' => $jurusan,
             ':wajah' => $wajah,
             ':descriptor' => $descriptor,
             ':password' => $hashed

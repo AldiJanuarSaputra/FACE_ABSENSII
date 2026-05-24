@@ -1,12 +1,12 @@
 <?php
 session_start();
-/*
+
 if (!isset($_SESSION['admin_user'])) {
     header("Location: login.php");
     exit;
 }
-*/
-$admin = $_SESSION['admin_user'] ?? 'Admin';
+
+$admin = $_SESSION['admin_user'];
 include "koneksi.php";
 
 // Ambil parameter filter dari GET

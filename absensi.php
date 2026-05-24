@@ -571,6 +571,7 @@ const hasilBox = document.getElementById("hasil-box");
 
 let labeledDescriptors = [];
 let isScanning = false;
+let isRealtimeTracking = false;
 
 // ── Splash screen hide ─────────────────────────────────
 function hideSplash() {
@@ -651,21 +652,24 @@ async function loadStudentDescriptors(){
 async function scan(){
     if(isScanning) return;
     isScanning = true;
+    isRealtimeTracking = false; // Hentikan tracking real-time sementara
     btnScan.disabled = true;
     hasilBox.classList.remove("show");
     clearOverlay();
 
     setStatus("🔍 Mendeteksi wajah...","info");
 
-    // Deteksi wajah
+    // Deteksi wajah (Menggunakan parameter lebih sensitif)
     const detection = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:416,scoreThreshold:0.3}))
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:0.2}))
         .withFaceLandmarks()
         .withFaceDescriptor();
 
     if(!detection){
         setStatus("❌ Wajah tidak terdeteksi. Pastikan wajah terlihat jelas dan cahaya cukup","err");
         isScanning = false;
+        isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+        startRealtimeTracking();
         btnScan.disabled = false;
         return;
     }
@@ -679,18 +683,22 @@ async function scan(){
     if(labeledDescriptors.length === 0){
         setStatus("⚠️ Wajah terdeteksi, tapi belum ada data siswa terdaftar","info");
         isScanning = false;
+        isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+        startRealtimeTracking();
         btnScan.disabled = false;
         return;
     }
 
-    // Pencocokan wajah
+    // Pencocokan wajah (menggunakan threshold toleransi 0.6)
     setStatus("🧠 Mencocokkan wajah...","info");
-    const matcher  = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
+    const matcher  = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
     const bestMatch= matcher.findBestMatch(detection.descriptor);
 
     if(bestMatch.label === "unknown"){
         setStatus("⚠️ Wajah tidak dikenali (jarak: "+bestMatch.distance.toFixed(3)+"). Coba lagi atau daftarkan wajah","err");
         isScanning = false;
+        isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+        startRealtimeTracking();
         btnScan.disabled = false;
         return;
     }
@@ -724,6 +732,8 @@ async function scan(){
     }
 
     isScanning = false;
+    isRealtimeTracking = true; // Hidupkan kembali tracking real-time
+    startRealtimeTracking();
     btnScan.disabled = false;
 }
 
@@ -801,10 +811,39 @@ function updateThemeUI(theme) {
 // Set correct toggle button UI on page load
 updateThemeUI(savedTheme);
 
+// ── Realtime Face Tracking Feedback ────────────────────
+async function startRealtimeTracking() {
+    if (!isRealtimeTracking) return;
+    
+    try {
+        const detection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize: 320, scoreThreshold: 0.25}))
+            .withFaceLandmarks();
+            
+        clearOverlay();
+        if (detection && isRealtimeTracking && !isScanning) {
+            const dims = faceapi.matchDimensions(overlay, video, true);
+            const resized = faceapi.resizeResults(detection, dims);
+            faceapi.draw.drawDetections(overlay, resized);
+            faceapi.draw.drawFaceLandmarks(overlay, resized);
+        }
+    } catch (e) {
+        console.error("Error in realtime tracking loop:", e);
+    }
+    
+    if (isRealtimeTracking && !isScanning) {
+        setTimeout(startRealtimeTracking, 120);
+    }
+}
+
 // ── Init ───────────────────────────────────────────────
 (async()=>{
     const camOk = await startCamera();
-    if(camOk) await loadModels();
+    if(camOk) {
+        await loadModels();
+        isRealtimeTracking = true;
+        startRealtimeTracking();
+    }
 })();
 </script>
 
