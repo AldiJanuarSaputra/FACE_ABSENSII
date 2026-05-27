@@ -19,5 +19,5 @@ foreach ($queries as $sql) {
     }
 }
 
-echo "<br><a href='index.php'>← Kembali ke Dashboard</a>";
+echo "<br><a href='../index.php'>← Kembali ke Dashboard</a>";
 ?>

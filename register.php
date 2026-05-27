@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "koneksi.php";
+include "config/koneksi.php";
 $siswa_id = isset($_GET['siswa_id']) ? (int)$_GET['siswa_id'] : 0;
 $kelas_id = isset($_GET['kelas_id']) ? (int)$_GET['kelas_id'] : 0;
 
@@ -531,7 +531,7 @@ async function daftar(){
 
     setStatus("💾 Menyimpan data...","info");
 
-    fetch("simpan_siswa.php",{
+    fetch("api/simpan_siswa.php",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({nis, nama, kelas, kelas_id, tingkat, jurusan, password, wajah:foto, descriptor})

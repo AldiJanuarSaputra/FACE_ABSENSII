@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "koneksi.php";
+require_once __DIR__ . '/../config/koneksi.php';
 
 header("Content-Type: application/json");
 

@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_user'])) {
 }
 
 $admin = $_SESSION['admin_user'];
-include "koneksi.php";
+include "config/koneksi.php";
 try {
     $qSiswa = $koneksi->query("SELECT COUNT(*) FROM siswa");
     $totalSiswa = $qSiswa->fetchColumn();

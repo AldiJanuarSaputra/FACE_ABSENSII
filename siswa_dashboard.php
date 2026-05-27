@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "koneksi.php";
+include "config/koneksi.php";
 
 // Middleware: Hanya boleh diakses oleh siswa yang sudah login
 if (!isset($_SESSION['siswa_user'])) {

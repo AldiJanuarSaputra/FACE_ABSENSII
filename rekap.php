@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_user'])) {
 }
 
 $admin = $_SESSION['admin_user'];
-include "koneksi.php";
+include "config/koneksi.php";
 
 // Ambil parameter filter dari GET
 $cari    = isset($_GET['cari']) ? trim($_GET['cari']) : '';

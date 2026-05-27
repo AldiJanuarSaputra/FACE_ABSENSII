@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "koneksi.php";
+include "config/koneksi.php";
 date_default_timezone_set("Asia/Jakarta");
 $hariIni = date("Y-m-d");
 $riwayatHariIni = [];
@@ -619,7 +619,7 @@ async function loadModels(){
 // ── Ambil descriptor siswa dari DB ─────────────────────
 async function loadStudentDescriptors(){
     try{
-        const res  = await fetch("get_siswa.php");
+        const res  = await fetch("api/get_siswa.php");
         const list = await res.json();
 
         if(!list || list.length === 0){
@@ -713,7 +713,7 @@ async function scan(){
 
     // Simpan absensi
     try{
-        const resp = await fetch("simpan_absen.php",{
+        const resp = await fetch("api/simpan_absen.php",{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({nis, nama, kelas})

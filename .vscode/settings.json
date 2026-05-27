@@ -40,5 +40,8 @@
     "list.activeSelectionForeground": "#ffffff",
     "list.hoverBackground": "#1b1435",
     "list.hoverForeground": "#e1dbec"
+  },
+  "files.readonlyInclude": {
+    "{**/.c4z/.extsrcs/*.PROTSYM.cbl,**/.c4z/.extsrcs/*.PROTSYM.listing}": true
   }
 }
