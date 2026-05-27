@@ -35,12 +35,16 @@ function loadEnv($path) {
 // Load file .env dari folder utama proyek
 loadEnv(__DIR__ . '/../.env');
 
-// 2. Mengambil kredensial database dari environment variables (dengan Fallback Keamanan)
-$host = getenv('DB_HOST') ?: "aws-1-ap-south-1.pooler.supabase.com"; 
-$port = getenv('DB_PORT') ?: "6543";                                     
-$user = getenv('DB_USER') ?: "postgres.cgnztnnflygpdpfdsrmm";             
-$pass = getenv('DB_PASS') ?: "faceabsensi123";                            
-$db   = getenv('DB_NAME') ?: "postgres";                                  
+// 2. Mengambil kredensial database dari environment variables
+$host = getenv('DB_HOST'); 
+$port = getenv('DB_PORT');                                     
+$user = getenv('DB_USER');             
+$pass = getenv('DB_PASS');                            
+$db   = getenv('DB_NAME');                                  
+
+if (!$host || !$user || !$pass) {
+    die("Koneksi ke Database Supabase Gagal: Kredensial database tidak terkonfigurasi di file .env");
+}
 
 // 3. Melakukan Koneksi ke PostgreSQL Supabase via PDO
 try {
