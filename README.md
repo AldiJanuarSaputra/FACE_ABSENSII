@@ -118,9 +118,9 @@ CREATE TABLE absensi (
 
 ## 📂 Penjelasan Struktur File Proyek
 
-Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini:
+Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini setelah dilakukan restrukturisasi folder:
 
-| Nama File | Deskripsi / Fungsi |
+| Nama File / Path | Deskripsi / Fungsi |
 | :--- | :--- |
 | `index.php` | Halaman menu utama / dashboard navigasi utama absensi. |
 | `absensi.php` | Halaman scan wajah real-time (*Live Camera*) untuk absensi siswa. |
@@ -133,15 +133,15 @@ Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini:
 | `kelas.php` | Panel manajemen kelas (tambah kelas, kelola tingkat, dan jurusan). |
 | `kelas_detail.php` | Halaman rincian daftar siswa berdasarkan kelas yang dipilih. |
 | `rekap.php` | Halaman rekapitulasi kehadiran dengan filter pencarian dan statistik. |
-| `koneksi.php` | File konfigurasi koneksi database PostgreSQL (Supabase) dengan PHP PDO. |
-| `simpan_siswa.php` | Endpoint API untuk menyimpan data profil dan descriptor wajah siswa baru. |
-| `simpan_absen.php` | Endpoint API untuk mencatat log presensi kehadiran siswa. |
-| `get_siswa.php` | Endpoint API untuk menarik descriptor wajah semua siswa ke client-side. |
-| `migrate.php` | Skema migrasi untuk memperbarui database secara otomatis. |
-| `migrate_tingkat_jurusan.php` | Skema migrasi khusus menambahkan kolom tingkat dan jurusan. |
+| `config/koneksi.php` | File konfigurasi koneksi database PostgreSQL (Supabase) dengan PHP PDO (menggunakan `.env`). |
+| `api/simpan_siswa.php` | Endpoint API untuk menyimpan data profil dan descriptor wajah siswa baru. |
+| `api/simpan_absen.php` | Endpoint API untuk mencatat log presensi kehadiran siswa. |
+| `api/get_siswa.php` | Endpoint API untuk menarik descriptor wajah semua siswa ke client-side. |
+| `config/migrate.php` | Skema migrasi untuk memperbarui database secara otomatis. |
+| `config/migrate_tingkat_jurusan.php` | Skema migrasi khusus menambahkan kolom tingkat dan jurusan. |
 | `manifest.json` | Konfigurasi manifest untuk kemampuan Progressive Web App (PWA). |
 | `sw.js` | Service Worker untuk caching aset dan dukungan PWA offline. |
-| `database.sql` | File SQL mentah yang berisi skema awal basis data. |
+| `config/database.sql` | File SQL mentah yang berisi skema awal basis data. |
 | `js/` | Direktori penyimpanan library JavaScript seperti `face-api.min.js`. |
 | `models/` | Direktori file bobot (*weights*) model AI FaceAPI.js. |
 
@@ -163,14 +163,14 @@ Berikut adalah fungsi dari masing-masing file utama di dalam proyek ini:
 
 Aplikasi ini dikembangkan oleh:
 
-| No | Nama Lengkap | NIM | Peran / Kontribusi |
+| No | Nama Lengkap | Peran / Kontribusi | Detail Pekerjaan |
 | :--- | :--- | :--- | :--- |
-| 1 | **Aldi Januar Saputra** | - | Full-Stack & UI/UX Designer |
-| 2 | **Veve** | - | Frontend & Backend Developer |
-| 3 | **Desta** | - | Collaborator / Developer |
-| 4 | **Dwi** | - | Collaborator / Developer |
-| 5 | **Fiis** | - | Collaborator / Developer |
-| 6 | **Hasbi** | - | Collaborator / Developer |
+| 1 | **Aldi Januar Saputra** | **Database & API Security** | Mengelola integrasi database Supabase PostgreSQL, keamanan konfigurasi, dan file `.env`. |
+| 2 | **Desta** | **Authentication System** | Membangun dan mengamankan sistem login serta register akun Admin/Guru (`register_admin.php`). |
+| 3 | **Dwi** | **CRUD Siswa & Kelas** | Merancang pengelolaan kelas dan data siswa beserta dataset sampel wajah (`kelas_detail.php`). |
+| 4 | **Fiis** | **Face Recognition System** | Integrasi `face-api.js` pada kamera absensi untuk pencocokan wajah real-time. |
+| 5 | **Veve** | **Admin Dashboard UI** | Mendesain antarmuka dashboard admin premium (glassmorphism) dan log kehadiran real-time. |
+| 6 | **Hasbi** | **Reporting & Export** | Membuat laporan rekapitulasi kehadiran siswa dan fitur ekspor data ke Excel/PDF. |
 
 ---
 
