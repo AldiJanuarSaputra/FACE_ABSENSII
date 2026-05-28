@@ -1,13 +1,13 @@
-<?php
+﻿<?php
 session_start();
 
 if (!isset($_SESSION['admin_user'])) {
-    header("Location: login.php");
+    header("Location: ../desta/login.php");
     exit;
 }
 
 $admin = $_SESSION['admin_user'];
-include "config/koneksi.php";
+include "../config/koneksi.php";
 
 // Ambil parameter filter dari GET
 $cari    = isset($_GET['cari']) ? trim($_GET['cari']) : '';
@@ -90,7 +90,7 @@ try {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rekap Absensi – Face Absensi</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#6366f1">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -101,7 +101,7 @@ try {
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
+        navigator.serviceWorker.register('../sw.js')
           .then(reg => console.log('Service Worker registered!', reg.scope))
           .catch(err => console.log('Service Worker failed!', err));
       });
@@ -604,25 +604,25 @@ tr:hover td {
             
             <ul class="menu-list">
                 <li class="menu-item">
-                    <a href="index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
+                    <a href="../veve/index.php"><i class="fa-solid fa-chart-pie"></i>Dashboard</a>
                 </li>
                 <li class="menu-item">
-                    <a href="kelas.php"><i class="fa-solid fa-school"></i>Manajemen Kelas</a>
+                    <a href="../dwi/kelas.php"><i class="fa-solid fa-school"></i>Manajemen Kelas</a>
                 </li>
                 <li class="menu-item">
-                    <a href="siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
+                    <a href="../dwi/siswa.php"><i class="fa-solid fa-users-gear"></i>Kelola Siswa</a>
                 </li>
                 <li class="menu-item active">
-                    <a href="rekap.php"><i class="fa-solid fa-chart-line"></i>Rekap Absensi</a>
+                    <a href="../hasbi/rekap.php"><i class="fa-solid fa-chart-line"></i>Rekap Absensi</a>
                 </li>
                 <li class="menu-item">
-                    <a href="database_console.php" style="color: #3ecf8e;"><i class="fa-solid fa-database"></i>Konsol Database</a>
+                    <a href="../aldi/database_console.php" style="color: #3ecf8e;"><i class="fa-solid fa-database"></i>Konsol Database</a>
                 </li>
                 <li class="menu-item" style="margin-top: 15px; border-top: 1px solid var(--sidebar-border); padding-top: 15px;">
-                    <a href="absensi.php" style="color: var(--primary);"><i class="fa-solid fa-camera"></i>Scan Kehadiran</a>
+                    <a href="../fiis/absensi.php" style="color: var(--primary);"><i class="fa-solid fa-camera"></i>Scan Kehadiran</a>
                 </li>
                 <li class="menu-item">
-                    <a href="register.php" style="color: var(--secondary);"><i class="fa-solid fa-user-plus"></i>Registrasi Wajah</a>
+                    <a href="../fiis/register.php" style="color: var(--secondary);"><i class="fa-solid fa-user-plus"></i>Registrasi Wajah</a>
                 </li>
             </ul>
         </div>
@@ -632,7 +632,7 @@ tr:hover td {
                 <i class="fa-solid fa-moon"></i>
                 <span id="themeBtnText">Mode Terang</span>
             </button>
-            <a href="logout.php" class="theme-toggle-btn" style="border-color: rgba(239, 68, 68, 0.15); color: var(--danger); background: rgba(239, 68, 68, 0.05); text-decoration: none;">
+            <a href="../desta/logout.php" class="theme-toggle-btn" style="border-color: rgba(239, 68, 68, 0.15); color: var(--danger); background: rgba(239, 68, 68, 0.05); text-decoration: none;">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>Keluar</span>
             </a>
@@ -704,7 +704,7 @@ tr:hover td {
 
                 <div class="filter-actions" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 2px;">
                     <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Filter</button>
-                    <a href="rekap.php" class="btn-reset"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
+                    <a href="../hasbi/rekap.php" class="btn-reset"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
                     <button type="button" class="btn-print" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Cetak</button>
                 </div>
             </form>

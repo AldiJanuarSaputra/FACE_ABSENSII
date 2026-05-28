@@ -1,22 +1,5 @@
 <?php
-session_start();
-
-// Hapus semua data session
-$_SESSION = [];
-
-// Jika menggunakan cookie session, hapus cookie tersebut
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000,
-        $params["path"], $params["domain"],
-        $params["secure"], $params["httponly"]
-    );
-}
-
-// Hancurkan session
-session_destroy();
-
-// Redirect ke portal login
-header("Location: login.php");
-exit;
-?>
+// STUB: File ini mengalihkan ke folder desta/ (tugas Desta — Authentication System)
+// Edit file asli di: desta/logout.php
+chdir(__DIR__);
+require 'desta/logout.php';
