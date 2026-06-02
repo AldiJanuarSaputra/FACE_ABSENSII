@@ -257,6 +257,70 @@ h1 span { color: #ff1493; }
 }
 .btn-print:hover { transform: translateY(-2px); box-shadow: 0 0 15px #00bfff; }
 
+.btn-excel {
+    padding: 12px 20px;
+    background: linear-gradient(90deg, #1a7a1a, #2ecc40);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-excel:hover { transform: translateY(-2px); box-shadow: 0 0 15px #2ecc40; }
+
+.btn-excel-rekap {
+    padding: 12px 20px;
+    background: linear-gradient(90deg, #7b4f00, #f39c12);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-excel-rekap:hover { transform: translateY(-2px); box-shadow: 0 0 15px #f39c12; }
+
+/* Tabs */
+.tab-wrap {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.tab-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #aaa;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.tab-btn.active {
+    background: linear-gradient(90deg,#ff1493,#ff69b4);
+    color: #fff;
+    border-color: transparent;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Rekap per siswa table */
+.rekap-table th { color: #ffd700; }
+.pct-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 20px; height: 8px; width: 80px; display:inline-block; vertical-align:middle; margin-left:6px; }
+.pct-bar { height: 8px; border-radius: 20px; background: linear-gradient(90deg,#00e676,#1de9b6); }
+
 /* Table Section */
 .table-container {
     background: rgba(255, 255, 255, 0.04);
@@ -410,6 +474,8 @@ tr:hover td {
             <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Filter</button>
             <a href="rekap.php" class="btn-reset"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
             <button type="button" class="btn-print" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Cetak</button>
+            <a id="btn-export-detail" href="export_excel.php?mode=detail<?php echo ($cari?'&cari='.urlencode($cari):'').($kelas?'&kelas='.urlencode($kelas):'').($tanggal?'&tanggal='.urlencode($tanggal):''); ?>" class="btn-excel"><i class="fa-solid fa-file-excel"></i>Export Log Excel</a>
+            <a id="btn-export-rekap" href="export_excel.php?mode=rekap<?php echo ($cari?'&cari='.urlencode($cari):'').($kelas?'&kelas='.urlencode($kelas):''); ?>" class="btn-excel-rekap"><i class="fa-solid fa-file-excel"></i>Export Rekap Siswa</a>
         </form>
     </div>
 
@@ -426,6 +492,14 @@ tr:hover td {
         </div>
     <?php endif; ?>
 
+    <!-- Tab Navigation -->
+    <div class="tab-wrap no-print">
+        <button class="tab-btn active" onclick="switchTab('tab-log', this)"><i class="fa-solid fa-list" style="margin-right:6px;"></i>Log Absensi</button>
+        <button class="tab-btn" onclick="switchTab('tab-rekap', this)"><i class="fa-solid fa-chart-bar" style="margin-right:6px;"></i>Rekap Per Siswa</button>
+    </div>
+
+    <!-- Tab: Log Absensi -->
+    <div id="tab-log" class="tab-content active">
     <!-- Table Absensi -->
     <div class="table-container">
         <table>
@@ -475,18 +549,104 @@ tr:hover td {
             </tbody>
         </table>
     </div>
+    </div><!-- end tab-log -->
+
+    <!-- Tab: Rekap Per Siswa -->
+    <div id="tab-rekap" class="tab-content">
+    <?php
+    // Query rekap per siswa
+    $rekapSiswa = [];
+    try {
+        $sqlRekap = "SELECT s.nis, s.nama, s.kelas,
+            COUNT(a.id) AS total,
+            SUM(CASE WHEN a.status='Hadir' THEN 1 ELSE 0 END) AS hadir,
+            SUM(CASE WHEN a.status='Terlambat' THEN 1 ELSE 0 END) AS terlambat,
+            MIN(a.tanggal)::TEXT AS pertama,
+            MAX(a.tanggal)::TEXT AS terakhir
+            FROM siswa s LEFT JOIN absensi a ON s.nis = a.nis";
+        $pRekap = [];
+        $whRekap = [];
+        if ($cari !== '') { $whRekap[] = '(s.nama ILIKE :cari OR s.nis ILIKE :cari)'; $pRekap[':cari'] = "%$cari%"; }
+        if ($kelas !== '') { $whRekap[] = 's.kelas = :kelas'; $pRekap[':kelas'] = $kelas; }
+        if (!empty($whRekap)) $sqlRekap .= ' WHERE ' . implode(' AND ', $whRekap);
+        $sqlRekap .= ' GROUP BY s.nis, s.nama, s.kelas ORDER BY s.kelas, s.nama';
+        $stRekap = $koneksi->prepare($sqlRekap);
+        $stRekap->execute($pRekap);
+        $rekapSiswa = $stRekap->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {}
+    ?>
+    <div class="table-container rekap-table">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:50px">No</th>
+                    <th>NIS</th>
+                    <th>Nama Lengkap</th>
+                    <th>Kelas</th>
+                    <th style="text-align:center">Total Absen</th>
+                    <th style="text-align:center">Hadir</th>
+                    <th style="text-align:center">Terlambat</th>
+                    <th style="text-align:center">% Hadir</th>
+                    <th>Pertama Absen</th>
+                    <th>Terakhir Absen</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if (!empty($rekapSiswa)): ?>
+                <?php foreach ($rekapSiswa as $i => $rs): ?>
+                <?php $pct = $rs['total'] > 0 ? round($rs['hadir'] / $rs['total'] * 100) : 0; ?>
+                <tr>
+                    <td><?php echo $i+1; ?></td>
+                    <td style="font-weight:600"><?php echo htmlspecialchars($rs['nis']); ?></td>
+                    <td><?php echo htmlspecialchars($rs['nama']); ?></td>
+                    <td><span style="background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:6px;font-size:13px"><?php echo htmlspecialchars($rs['kelas']); ?></span></td>
+                    <td style="text-align:center;font-weight:700;color:#00bfff"><?php echo (int)$rs['total']; ?></td>
+                    <td style="text-align:center;color:#7fff7f;font-weight:700"><?php echo (int)$rs['hadir']; ?></td>
+                    <td style="text-align:center;color:#ff6b6b;font-weight:700"><?php echo (int)$rs['terlambat']; ?></td>
+                    <td style="text-align:center">
+                        <span style="font-weight:700;color:<?php echo $pct>=80?'#7fff7f':($pct>=60?'#ffd700':'#ff6b6b'); ?>"><?php echo $pct; ?>%</span>
+                        <span class="pct-bar-wrap"><span class="pct-bar" style="width:<?php echo $pct; ?>%;background:<?php echo $pct>=80?'linear-gradient(90deg,#00e676,#1de9b6)':($pct>=60?'linear-gradient(90deg,#f7971e,#ffd200)':'linear-gradient(90deg,#f7071e,#ff6b6b)'); ?>"></span></span>
+                    </td>
+                    <td style="font-size:13px;color:#aaa"><?php echo $rs['pertama'] ? date('d/m/Y', strtotime($rs['pertama'])) : '-'; ?></td>
+                    <td style="font-size:13px;color:#aaa"><?php echo $rs['terakhir'] ? date('d/m/Y', strtotime($rs['terakhir'])) : '-'; ?></td>
+                </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="10" class="empty-state"><i class="fa-solid fa-inbox" style="margin-right:8px"></i>Tidak ada data siswa.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    </div><!-- end tab-rekap -->
+
 </div>
 
 <script>
 function konfirmasiHapus(id, nama, tanggal) {
     if (confirm("Apakah Anda yakin ingin menghapus log absensi siswa '" + nama + "' pada tanggal " + tanggal + "?")) {
-        // Ambil query parameter pencarian/filter saat ini agar tidak ter-reset setelah hapus
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.set('action', 'delete');
         urlParams.set('id', id);
         window.location.href = "rekap.php?" + urlParams.toString();
     }
 }
+
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    // Update URL tombol export saat pindah tab
+    if (tabId === 'tab-rekap') {
+        document.getElementById('btn-export-rekap').style.outline = '2px solid #f39c12';
+        document.getElementById('btn-export-detail').style.outline = '';
+    } else {
+        document.getElementById('btn-export-detail').style.outline = '2px solid #2ecc40';
+        document.getElementById('btn-export-rekap').style.outline = '';
+    }
+}
+// Highlight tombol export sesuai tab aktif saat load
+document.getElementById('btn-export-detail').style.outline = '2px solid #2ecc40';
 </script>
 </body>
 </html>
