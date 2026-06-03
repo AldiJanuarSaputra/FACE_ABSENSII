@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 
 if (!isset($_SESSION['admin_user'])) {
@@ -10,25 +10,54 @@ $admin = $_SESSION['admin_user'];
 include "../config/koneksi.php";
 try {
     $qSiswa = $koneksi->query("SELECT COUNT(*) FROM siswa");
-    $totalSiswa = $qSiswa->fetchColumn();
+    $totalSiswa = (int)$qSiswa->fetchColumn();
 
     // Query untuk absensi hari ini (tanggal sekarang)
     $hariIni = date('Y-m-d');
     $qHadir = $koneksi->prepare("SELECT COUNT(*) FROM absensi WHERE tanggal = :tgl AND status = 'Hadir'");
     $qHadir->execute([':tgl' => $hariIni]);
-    $totalHadir = $qHadir->fetchColumn();
-
-    $qKelas = $koneksi->query("SELECT COUNT(*) FROM kelas");
-    $totalKelas = $qKelas->fetchColumn();
+    $totalHadir = (int)$qHadir->fetchColumn();
 
     $qLambat = $koneksi->prepare("SELECT COUNT(*) FROM absensi WHERE tanggal = :tgl AND status = 'Terlambat'");
     $qLambat->execute([':tgl' => $hariIni]);
-    $totalLambat = $qLambat->fetchColumn();
+    $totalLambat = (int)$qLambat->fetchColumn();
+
+    $totalAlfa = max(0, $totalSiswa - ($totalHadir + $totalLambat));
+
+    // Query tren kehadiran 7 hari terakhir
+    $trenKehadiran = [];
+    for ($i = 6; $i >= 0; $i--) {
+        $tgl = date('Y-m-d', strtotime("-$i days"));
+        
+        $qH = $koneksi->prepare("SELECT COUNT(*) FROM absensi WHERE tanggal = :tgl AND status = 'Hadir'");
+        $qH->execute([':tgl' => $tgl]);
+        $h = (int)$qH->fetchColumn();
+        
+        $qL = $koneksi->prepare("SELECT COUNT(*) FROM absensi WHERE tanggal = :tgl AND status = 'Terlambat'");
+        $qL->execute([':tgl' => $tgl]);
+        $l = (int)$qL->fetchColumn();
+        
+        $a = max(0, $totalSiswa - ($h + $l));
+        
+        $trenKehadiran[] = [
+            'tanggal' => date('d/m', strtotime($tgl)),
+            'hadir' => $h,
+            'terlambat' => $l,
+            'alfa' => $a
+        ];
+    }
+
+    // Ambil 5 log absensi terbaru secara global untuk inisialisasi tabel
+    $qRecentLogs = $koneksi->query("SELECT nis, nama, kelas, tanggal, jam, status FROM absensi ORDER BY tanggal DESC, jam DESC LIMIT 5");
+    $recentLogs = $qRecentLogs->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     $totalSiswa = 0;
-    $totalKelas = 0;
     $totalHadir = 0;
     $totalLambat = 0;
+    $totalAlfa = 0;
+    $trenKehadiran = [];
+    $recentLogs = [];
 }
 ?>
 <!DOCTYPE html>
@@ -41,6 +70,7 @@ try {
 <meta name="theme-color" content="#6366f1">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Theme Initializer (mencegah kedipan putih/FOUC)
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -74,12 +104,14 @@ try {
     --secondary-glow: rgba(14, 165, 233, 0.3);
     --success: #10b981;
     --danger: #ef4444;
+    --warning: #f59e0b;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --sidebar-bg: #090a12;
     --sidebar-border: #1f2937; /* Pembatas sidebar ultra-tegas */
     --active-menu: rgba(99, 102, 241, 0.15);
     --input-bg: #090a12;
+    --row-border: rgba(99, 102, 241, 0.15);
 }
 
 html[data-theme="light"] {
@@ -95,12 +127,14 @@ html[data-theme="light"] {
     --secondary-glow: rgba(14, 165, 233, 0.15);
     --success: #10b981;
     --danger: #ef4444;
+    --warning: #f59e0b;
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --sidebar-bg: #ffffff;
     --sidebar-border: #cbd5e1;
     --active-menu: rgba(79, 70, 229, 0.08);
     --input-bg: #f1f5f9;
+    --row-border: rgba(0, 0, 0, 0.05);
 }
 
 body {
@@ -439,6 +473,141 @@ body {
         display: block;
     }
 }
+
+/* Grid Grafik */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 35px;
+}
+
+.chart-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 2px solid var(--card-border);
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-card h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    flex-grow: 1;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Section Logs Terbaru */
+.logs-section {
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    border: 2px solid var(--card-border);
+    border-radius: 24px;
+    padding: 30px;
+    margin-bottom: 35px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.logs-section h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+}
+
+.logs-table-container {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1.5px solid var(--card-border);
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.logs-table th {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-secondary);
+    padding: 14px 18px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 1.5px solid var(--card-border);
+}
+
+.logs-table td {
+    padding: 14px 18px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--row-border);
+    color: var(--text-primary);
+}
+
+.logs-table tr:last-child td {
+    border-bottom: none;
+}
+
+.logs-table tr:hover td {
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.badge-hadir {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-lambat {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 992px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 </head>
 <body>
@@ -508,28 +677,44 @@ body {
                 <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
                 <div class="stat-info">
                     <h3>Total Siswa Terdaftar</h3>
-                    <p><?php echo $totalSiswa; ?></p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.12); color: var(--primary);"><i class="fa-solid fa-school"></i></div>
-                <div class="stat-info">
-                    <h3>Total Kelas Aktif</h3>
-                    <p><?php echo $totalKelas; ?></p>
+                    <p id="stat-total-siswa"><?php echo $totalSiswa; ?></p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="stat-info">
                     <h3>Hadir Hari Ini</h3>
-                    <p><?php echo $totalHadir; ?></p>
+                    <p id="stat-hadir"><?php echo $totalHadir; ?></p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon red"><i class="fa-solid fa-clock-rotate-left"></i></div>
                 <div class="stat-info">
                     <h3>Terlambat Hari Ini</h3>
-                    <p><?php echo $totalLambat; ?></p>
+                    <p id="stat-terlambat"><?php echo $totalLambat; ?></p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2);"><i class="fa-solid fa-user-xmark"></i></div>
+                <div class="stat-info">
+                    <h3>Alfa Hari Ini</h3>
+                    <p id="stat-alfa"><?php echo $totalAlfa; ?></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <section class="charts-grid">
+            <div class="chart-card">
+                <h4><i class="fa-solid fa-chart-column" style="color: var(--primary);"></i> Tren Kehadiran 7 Hari Terakhir</h4>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h4><i class="fa-solid fa-chart-pie" style="color: var(--secondary);"></i> Distribusi Kehadiran Hari Ini</h4>
+                <div class="chart-container">
+                    <canvas id="todayChart"></canvas>
                 </div>
             </div>
         </section>
@@ -569,6 +754,51 @@ body {
             </div>
         </section>
 
+        <!-- Logs Aktivitas Kehadiran -->
+        <section class="logs-section">
+            <h4><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Aktivitas Kehadiran Terbaru (Real-time)</h4>
+            <div class="logs-table-container">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>NIS</th>
+                            <th>Nama Lengkap</th>
+                            <th>Kelas</th>
+                            <th>Waktu Absen</th>
+                            <th style="width: 120px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-tbody">
+                        <?php if (count($recentLogs) > 0): ?>
+                            <?php $no = 1; foreach ($recentLogs as $log): ?>
+                                <tr>
+                                    <td><?php echo $no++; ?></td>
+                                    <td style="font-weight: 700;"><?php echo htmlspecialchars($log['nis']); ?></td>
+                                    <td><?php echo htmlspecialchars($log['nama']); ?></td>
+                                    <td><?php echo htmlspecialchars($log['kelas']); ?></td>
+                                    <td style="font-family: monospace;"><?php echo date("d/m/Y", strtotime($log['tanggal'])) . ' ' . date("H:i", strtotime($log['jam'])); ?></td>
+                                    <td>
+                                        <?php if ($log['status'] === 'Hadir'): ?>
+                                            <span class="badge badge-hadir">Hadir</span>
+                                        <?php else: ?>
+                                            <span class="badge badge-lambat">Terlambat</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <i class="fa-solid fa-inbox" style="margin-right: 8px;"></i>Belum ada aktivitas kehadiran hari ini.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- Quick Guide -->
         <footer class="quick-guide">
             <h4><i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Instruksi Cepat Dasbor</h4>
@@ -595,6 +825,7 @@ function toggleTheme() {
     localStorage.setItem('theme', newTheme);
     
     updateThemeUI(newTheme);
+    updateChartsTheme(newTheme);
 }
 
 function updateThemeUI(theme) {
@@ -609,6 +840,230 @@ function updateThemeUI(theme) {
 
 // Set correct toggle button UI on page load
 updateThemeUI(savedTheme);
+
+// ==========================================
+// Integrasi Grafik & Fitur Real-Time Admin
+// ==========================================
+
+// Data tren kehadiran 7 hari dari PHP
+const trenData = <?php echo json_encode($trenKehadiran); ?>;
+
+// Ambil warna tema awal
+const style = getComputedStyle(document.documentElement);
+const textColor = style.getPropertyValue('--text-secondary').trim() || '#94a3b8';
+const cardBg = style.getPropertyValue('--card-bg').trim() || '#111422';
+
+// 1. Inisialisasi Chart Tren Kehadiran (Bar Chart)
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+const trendChart = new Chart(trendCtx, {
+    type: 'bar',
+    data: {
+        labels: trenData.map(d => d.tanggal),
+        datasets: [
+            {
+                label: 'Hadir',
+                data: trenData.map(d => d.hadir),
+                backgroundColor: '#10b981',
+                borderRadius: 6
+            },
+            {
+                label: 'Terlambat',
+                data: trenData.map(d => d.terlambat),
+                backgroundColor: '#ef4444',
+                borderRadius: 6
+            },
+            {
+                label: 'Alfa',
+                data: trenData.map(d => d.alfa),
+                backgroundColor: '#f59e0b',
+                borderRadius: 6
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: textColor,
+                    font: { family: 'Plus Jakarta Sans', weight: '600', size: 12 }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#090a12',
+                titleColor: '#fff',
+                bodyColor: '#94a3b8',
+                borderColor: '#374151',
+                borderWidth: 1,
+                padding: 12,
+                bodyFont: { family: 'Plus Jakarta Sans' }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: {
+                    color: textColor,
+                    font: { family: 'Plus Jakarta Sans', size: 11 }
+                }
+            },
+            y: {
+                grid: { color: savedTheme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255, 255, 255, 0.05)' },
+                ticks: {
+                    color: textColor,
+                    font: { family: 'Plus Jakarta Sans', size: 11 },
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+
+// 2. Inisialisasi Chart Distribusi Hari Ini (Doughnut Chart)
+const todayCtx = document.getElementById('todayChart').getContext('2d');
+const todayChart = new Chart(todayCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Hadir', 'Terlambat', 'Alfa'],
+        datasets: [{
+            data: [
+                <?php echo $totalHadir; ?>,
+                <?php echo $totalLambat; ?>,
+                <?php echo $totalAlfa; ?>
+            ],
+            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+            borderColor: cardBg,
+            borderWidth: 3,
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: textColor,
+                    font: { family: 'Plus Jakarta Sans', weight: '600', size: 12 }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#090a12',
+                padding: 12,
+                bodyFont: { family: 'Plus Jakarta Sans' }
+            }
+        }
+    }
+});
+
+// Fungsi pembaruan warna chart ketika ganti tema
+function updateChartsTheme(theme) {
+    const gridColor = theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+    const textCol = theme === 'light' ? '#475569' : '#94a3b8';
+    const cBg = theme === 'light' ? '#ffffff' : '#111422';
+
+    // Update Trend Chart
+    trendChart.options.scales.y.grid.color = gridColor;
+    trendChart.options.scales.x.ticks.color = textCol;
+    trendChart.options.scales.y.ticks.color = textCol;
+    trendChart.options.plugins.legend.labels.color = textCol;
+    trendChart.update();
+
+    // Update Today Chart
+    todayChart.options.plugins.legend.labels.color = textCol;
+    todayChart.data.datasets[0].borderColor = cBg;
+    todayChart.update();
+}
+
+// Panggil update warna chart pertama kali untuk menyesuaikan tema saat ini
+updateChartsTheme(savedTheme);
+
+// 3. Logika Real-time AJAX Polling
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function updateDashboardData() {
+    fetch('api_dashboard_realtime.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update kartu statistik dengan animasi hitung naik/turun
+                animateValue('stat-total-siswa', data.stats.totalSiswa);
+                animateValue('stat-hadir', data.stats.totalHadir);
+                animateValue('stat-terlambat', data.stats.totalLambat);
+                animateValue('stat-alfa', data.stats.totalAlfa);
+
+                // Update Doughnut Chart Hari Ini
+                todayChart.data.datasets[0].data = [
+                    data.stats.totalHadir,
+                    data.stats.totalLambat,
+                    data.stats.totalAlfa
+                ];
+                todayChart.update();
+
+                // Update Tabel Log Kehadiran Terbaru
+                const tbody = document.getElementById('logs-tbody');
+                if (data.logs.length > 0) {
+                    let html = '';
+                    data.logs.forEach((log, index) => {
+                        const badgeClass = log.status === 'Hadir' ? 'badge-hadir' : 'badge-lambat';
+                        html += `<tr>
+                            <td>${index + 1}</td>
+                            <td style="font-weight: 700;">${escapeHtml(log.nis)}</td>
+                            <td>${escapeHtml(log.nama)}</td>
+                            <td>${escapeHtml(log.kelas)}</td>
+                            <td style="font-family: monospace;">${escapeHtml(log.tanggal_format)} ${escapeHtml(log.jam_format)}</td>
+                            <td><span class="badge ${badgeClass}">${escapeHtml(log.status)}</span></td>
+                        </tr>`;
+                    });
+                    tbody.innerHTML = html;
+                } else {
+                    tbody.innerHTML = `<tr>
+                        <td colspan="6" class="empty-state">
+                            <i class="fa-solid fa-inbox" style="margin-right: 8px;"></i>Belum ada aktivitas kehadiran hari ini.
+                        </td>
+                    </tr>`;
+                }
+            }
+        })
+        .catch(err => console.error('Gagal mengambil data real-time:', err));
+}
+
+// Fungsi animasi perubahan angka statistik
+function animateValue(id, endVal) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const startVal = parseInt(el.innerText) || 0;
+    if (startVal === endVal) return;
+    
+    let current = startVal;
+    const range = endVal - startVal;
+    const increment = range > 0 ? 1 : -1;
+    const duration = 300; // total waktu animasi dalam milidetik
+    const stepTime = Math.max(Math.floor(duration / Math.abs(range)), 15);
+    
+    const timer = setInterval(() => {
+        current += increment;
+        el.innerText = current;
+        if (current === endVal) {
+            clearInterval(timer);
+        }
+    }, stepTime);
+}
+
+// Jalankan polling setiap 5 detik
+setInterval(updateDashboardData, 5000);
 </script>
 </body>
 </html>
