@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 include "../config/koneksi.php";
 date_default_timezone_set("Asia/Jakarta");
@@ -603,9 +603,9 @@ async function loadModels(){
     setStatus("⏳ Memuat model AI...","info");
     try{
         await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri("models"),
-            faceapi.nets.faceLandmark68Net.loadFromUri("models"),
-            faceapi.nets.faceRecognitionNet.loadFromUri("models")
+            faceapi.nets.tinyFaceDetector.loadFromUri("../models"),
+            faceapi.nets.faceLandmark68Net.loadFromUri("../models"),
+            faceapi.nets.faceRecognitionNet.loadFromUri("../models")
         ]);
         setStatus("⏳ Memuat data wajah siswa...","info");
         await loadStudentDescriptors();

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 include "../config/koneksi.php";
 $siswa_id = isset($_GET['siswa_id']) ? (int)$_GET['siswa_id'] : 0;
@@ -464,9 +464,9 @@ async function loadModels(){
     try{
         setStatus("⏳ Memuat model AI...","info");
         await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri("models"),
-            faceapi.nets.faceLandmark68Net.loadFromUri("models"),
-            faceapi.nets.faceRecognitionNet.loadFromUri("models")
+            faceapi.nets.tinyFaceDetector.loadFromUri("../models"),
+            faceapi.nets.faceLandmark68Net.loadFromUri("../models"),
+            faceapi.nets.faceRecognitionNet.loadFromUri("../models")
         ]);
         modelsReady = true;
         btnDaftar.disabled = false;
