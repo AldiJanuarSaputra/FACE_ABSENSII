@@ -14,11 +14,11 @@ Mengelola fitur **CRUD (Create, Read, Update, Delete)** untuk data siswa dan kel
 | [`siswa.php`](./siswa.php) | Pengelolaan siswa global — cari, edit, hapus siswa |
 
 ## ✅ Checklist Tugas
-- [ ] Tampilkan daftar semua kelas dengan fitur tambah/edit/hapus
-- [ ] Halaman detail kelas dengan daftar siswa yang terdaftar
-- [ ] Fitur pencarian dan filter siswa
-- [ ] Operasi CRUD siswa (tambah, edit, hapus) dengan konfirmasi
-- [ ] Validasi data input (NIS unik, nama tidak kosong, dll.)
+- [x] Tampilkan daftar semua kelas dengan fitur tambah/edit/hapus
+- [x] Halaman detail kelas dengan daftar siswa yang terdaftar
+- [x] Fitur pencarian dan filter siswa
+- [x] Operasi CRUD siswa (tambah, edit, hapus) dengan konfirmasi
+- [x] Validasi data input (NIS unik, nama tidak kosong, dll.)
 
 ## 🔗 File Terkait (di luar folder)
 - `config/koneksi.php` — Koneksi database (koordinasi dengan Aldi)
