@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 include "../config/koneksi.php";
 
@@ -14,9 +14,10 @@ if (isset($_SESSION['admin_user'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $usernameOrNis = trim($_POST['username_nis']);
+    // Sanitize input to prevent basic SQL injection / XSS attacks
+    $usernameOrNis = htmlspecialchars(strip_tags(trim($_POST['username_nis'])));
     $password      = trim($_POST['password']);
-    $role          = $_POST['role'] ?? 'siswa';
+    $role          = htmlspecialchars(strip_tags($_POST['role'] ?? 'siswa'));
 
     if (!$usernameOrNis || !$password) {
         $error = "Semua kolom login wajib diisi!";
