@@ -1,8 +1,4 @@
 <?php
-/**
- * Module: Kelola Siswa (CRUD)
- * Author: Dwi (dwiw58896-jpg)
- */
 session_start();
 
 if (!isset($_SESSION['admin_user'])) {
