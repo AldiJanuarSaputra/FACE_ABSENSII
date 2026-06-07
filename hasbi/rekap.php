@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 
 if (!isset($_SESSION['admin_user'])) {
@@ -589,6 +589,88 @@ tr:hover td {
         color: #000;
     }
 }
+
+/* Excel Export Buttons */
+.btn-excel {
+    padding: 12px 20px;
+    background: var(--success);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+.btn-excel:hover { 
+    background: #059669; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn-excel-rekap {
+    padding: 12px 20px;
+    background: var(--warning);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
+.btn-excel-rekap:hover { 
+    background: #d97706; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+}
+
+/* Tabs */
+.tab-wrap {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+.tab-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: 2px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+.tab-btn.active {
+    background: var(--active-menu);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Rekap per siswa table */
+.rekap-table th { color: var(--warning); }
+.pct-bar-wrap { background: rgba(255, 255, 255, 0.08); border-radius: 20px; height: 8px; width: 80px; display: inline-block; vertical-align: middle; margin-left: 6px; }
+.pct-bar { height: 8px; border-radius: 20px; }
 </style>
 </head>
 <body>
@@ -706,6 +788,8 @@ tr:hover td {
                     <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i>Filter</button>
                     <a href="../hasbi/rekap.php" class="btn-reset"><i class="fa-solid fa-rotate-left" style="margin-right: 6px;"></i>Reset</a>
                     <button type="button" class="btn-print" onclick="window.print()"><i class="fa-solid fa-print" style="margin-right: 6px;"></i>Cetak</button>
+                    <a id="btn-export-detail" href="export_excel.php?mode=detail<?php echo ($cari?'&cari='.urlencode($cari):'').($kelas?'&kelas='.urlencode($kelas):'').($tanggal?'&tanggal='.urlencode($tanggal):''); ?>" class="btn-excel"><i class="fa-solid fa-file-excel"></i>Export Log Excel</a>
+                    <a id="btn-export-rekap" href="export_excel.php?mode=rekap<?php echo ($cari?'&cari='.urlencode($cari):'').($kelas?'&kelas='.urlencode($kelas):''); ?>" class="btn-excel-rekap"><i class="fa-solid fa-file-excel"></i>Export Rekap Siswa</a>
                 </div>
             </form>
         </div>
@@ -723,6 +807,14 @@ tr:hover td {
             </div>
         <?php endif; ?>
 
+        <!-- Tab Navigation -->
+        <div class="tab-wrap no-print">
+            <button class="tab-btn active" onclick="switchTab('tab-log', this)"><i class="fa-solid fa-list" style="margin-right: 6px;"></i>Log Absensi</button>
+            <button class="tab-btn" onclick="switchTab('tab-rekap', this)"><i class="fa-solid fa-chart-bar" style="margin-right: 6px;"></i>Rekap Per Siswa</button>
+        </div>
+
+        <!-- Tab: Log Absensi -->
+        <div id="tab-log" class="tab-content active">
         <!-- Table Absensi -->
         <div class="table-container">
             <table>
@@ -772,6 +864,75 @@ tr:hover td {
                 </tbody>
             </table>
         </div>
+        </div> <!-- end tab-log -->
+
+        <!-- Tab: Rekap Per Siswa -->
+        <div id="tab-rekap" class="tab-content">
+        <?php
+        // Query rekap per siswa
+        $rekapSiswa = [];
+        try {
+            $sqlRekap = "SELECT s.nis, s.nama, s.kelas,
+                COUNT(a.id) AS total,
+                SUM(CASE WHEN a.status='Hadir' THEN 1 ELSE 0 END) AS hadir,
+                SUM(CASE WHEN a.status='Terlambat' THEN 1 ELSE 0 END) AS terlambat,
+                MIN(a.tanggal)::TEXT AS pertama,
+                MAX(a.tanggal)::TEXT AS terakhir
+                FROM siswa s LEFT JOIN absensi a ON s.nis = a.nis";
+            $pRekap = [];
+            $whRekap = [];
+            if ($cari !== '') { $whRekap[] = '(s.nama ILIKE :cari OR s.nis ILIKE :cari)'; $pRekap[':cari'] = "%$cari%"; }
+            if ($kelas !== '') { $whRekap[] = 's.kelas = :kelas'; $pRekap[':kelas'] = $kelas; }
+            if (!empty($whRekap)) $sqlRekap .= ' WHERE ' . implode(' AND ', $whRekap);
+            $sqlRekap .= ' GROUP BY s.nis, s.nama, s.kelas ORDER BY s.kelas, s.nama';
+            $stRekap = $koneksi->prepare($sqlRekap);
+            $stRekap->execute($pRekap);
+            $rekapSiswa = $stRekap->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {}
+        ?>
+        <div class="table-container rekap-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:50px">No</th>
+                        <th>NIS</th>
+                        <th>Nama Lengkap</th>
+                        <th>Kelas</th>
+                        <th style="text-align:center">Total Absen</th>
+                        <th style="text-align:center">Hadir</th>
+                        <th style="text-align:center">Terlambat</th>
+                        <th style="text-align:center">% Hadir</th>
+                        <th>Pertama Absen</th>
+                        <th>Terakhir Absen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php if (!empty($rekapSiswa)): ?>
+                    <?php foreach ($rekapSiswa as $i => $rs): ?>
+                    <?php $pct = $rs['total'] > 0 ? round($rs['hadir'] / $rs['total'] * 100) : 0; ?>
+                    <tr>
+                        <td><?php echo $i+1; ?></td>
+                        <td style="font-weight:700"><?php echo htmlspecialchars($rs['nis']); ?></td>
+                        <td><?php echo htmlspecialchars($rs['nama']); ?></td>
+                        <td><span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary);"><?php echo htmlspecialchars($rs['kelas']); ?></span></td>
+                        <td style="text-align:center;font-weight:700;color:var(--secondary)"><?php echo (int)$rs['total']; ?></td>
+                        <td style="text-align:center;color:var(--success);font-weight:700"><?php echo (int)$rs['hadir']; ?></td>
+                        <td style="text-align:center;color:var(--danger);font-weight:700"><?php echo (int)$rs['terlambat']; ?></td>
+                        <td style="text-align:center">
+                            <span style="font-weight:700;color:<?php echo $pct>=80?'var(--success)':($pct>=60?'var(--warning)':'var(--danger)'); ?>"><?php echo $pct; ?>%</span>
+                            <span class="pct-bar-wrap"><span class="pct-bar" style="width:<?php echo $pct; ?>%;background:<?php echo $pct>=80?'linear-gradient(90deg, #10b981, #059669)':($pct>=60?'linear-gradient(90deg, #f59e0b, #d97706)':'linear-gradient(90deg, #ef4444, #dc2626)'); ?>"></span></span>
+                        </td>
+                        <td style="font-size:13px;color:var(--text-secondary)"><?php echo $rs['pertama'] ? date('d/m/Y', strtotime($rs['pertama'])) : '-'; ?></td>
+                        <td style="font-size:13px;color:var(--text-secondary)"><?php echo $rs['terakhir'] ? date('d/m/Y', strtotime($rs['terakhir'])) : '-'; ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="10" class="empty-state"><i class="fa-solid fa-inbox" style="margin-right:8px"></i>Tidak ada data siswa.</td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        </div><!-- end tab-rekap -->
     </main>
 </div>
 
@@ -811,6 +972,24 @@ function konfirmasiHapus(id, nama, tanggal) {
         window.location.href = "rekap.php?" + urlParams.toString();
     }
 }
+
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    // Update visibility of export buttons based on active tab
+    if (tabId === 'tab-rekap') {
+        document.getElementById('btn-export-rekap').style.display = 'inline-flex';
+        document.getElementById('btn-export-detail').style.display = 'none';
+    } else {
+        document.getElementById('btn-export-detail').style.display = 'inline-flex';
+        document.getElementById('btn-export-rekap').style.display = 'none';
+    }
+}
+// Initialize button visibility on page load
+document.getElementById('btn-export-detail').style.display = 'inline-flex';
+document.getElementById('btn-export-rekap').style.display = 'none';
 </script>
 </body>
 </html>
