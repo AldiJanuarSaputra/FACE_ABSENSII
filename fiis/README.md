@@ -14,11 +14,11 @@ Mengembangkan fitur utama **pengenalan wajah** berbasis AI untuk absensi real-ti
 | [`tescamera.php`](./tescamera.php) | Halaman tes kamera sebelum digunakan |
 
 ## ✅ Checklist Tugas
-- [ ] Integrasi library face-api.js untuk deteksi wajah
-- [ ] Halaman absensi kamera yang berjalan otomatis tanpa klik
-- [ ] Fitur registrasi wajah siswa dengan validasi NIS
-- [ ] Simpan data absensi ke database dengan timestamp
-- [ ] Halaman tes kamera untuk debugging hardware
+- [x] Integrasi library face-api.js untuk deteksi wajah
+- [x] Halaman absensi kamera yang berjalan otomatis tanpa klik
+- [x] Fitur registrasi wajah siswa dengan validasi NIS
+- [x] Simpan data absensi ke database dengan timestamp
+- [x] Halaman tes kamera untuk debugging hardware
 
 ## 🔗 File Terkait (di luar folder)
 - `models/` — File model AI face-api.js (jangan hapus!)
