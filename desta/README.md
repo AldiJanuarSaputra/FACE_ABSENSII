@@ -14,11 +14,11 @@ Membangun sistem **login & logout** yang aman untuk admin dan siswa, serta halam
 | [`register_admin.php`](./register_admin.php) | Halaman pendaftaran akun admin baru |
 
 ## ✅ Checklist Tugas
-- [ ] Form login dengan validasi input dan pesan error yang jelas
-- [ ] Penanganan session admin dan siswa secara terpisah
-- [ ] Script logout yang aman (destroy session, redirect ke login)
-- [ ] Form registrasi admin baru dengan validasi password
-- [ ] Proteksi halaman dengan session check di setiap halaman admin
+- [x] Form login dengan validasi input dan pesan error yang jelas
+- [x] Penanganan session admin dan siswa secara terpisah
+- [x] Script logout yang aman (destroy session, redirect ke login)
+- [x] Form registrasi admin baru dengan validasi password
+- [x] Proteksi halaman dengan session check di setiap halaman admin
 
 ## 🔗 File Terkait (di luar folder)
 - `config/koneksi.php` — Koneksi database (koordinasi dengan Aldi)
