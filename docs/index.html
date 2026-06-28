@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dokumentasi resmi Sistem Absensi Deteksi Wajah (FACE_ABSENSII) - Panduan penggunaan, arsitektur sistem, alur kerja, dan tim pengembang.">
+    <title>Dokumentasi Sistem Absensi Deteksi Wajah (FACE_ABSENSII)</title>
+    
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Styling -->
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --primary-dark: #3730A3;
+            --secondary: #10B981;
+            --dark-bg: #0B0F19;
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --card-bg: rgba(31, 41, 55, 0.45);
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glow: rgba(79, 70, 229, 0.15);
+            --font-title: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
+            background-attachment: fixed;
+        }
+
+        /* Ambient Glow Objects */
+        .ambient-glow-1 {
+            position: fixed;
+            top: -10%;
+            right: 10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(50px);
+        }
+        
+        .ambient-glow-2 {
+            position: fixed;
+            bottom: -5%;
+            left: 5%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(50px);
+        }
+
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar Styling */
+        aside.sidebar {
+            width: 300px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 2.5rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.25rem;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .logo-text {
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-subtitle {
+            font-size: 0.65rem;
+            color: var(--secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: block;
+            margin-top: -2px;
+        }
+
+        /* Navigation List */
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+
+        .nav-item button {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.85rem 1.25rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-item button:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active button {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(79, 70, 229, 0.05));
+            border-color: rgba(79, 70, 229, 0.25);
+            box-shadow: inset 0 0 12px rgba(79, 70, 229, 0.1);
+        }
+
+        .nav-item.active button i {
+            color: var(--primary-light);
+            text-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Main Content Styling */
+        main.main-content {
+            margin-left: 300px;
+            padding: 3rem 4rem;
+            width: calc(100% - 300px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styling */
+        header.top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-title-wrapper h1 {
+            font-family: var(--font-title);
+            font-weight: 800;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-title-wrapper p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .meta-info-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+        }
+
+        /* Section Styling */
+        .doc-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .doc-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hero / Overview Panel */
+        .hero-banner {
+            background: radial-gradient(100% 100% at 0% 0%, rgba(79, 70, 229, 0.12) 0%, rgba(31, 41, 55, 0.2) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            transform: translateX(-100%);
+            transition: 0.8s;
+        }
+
+        .hero-banner:hover::before {
+            transform: translateX(100%);
+        }
+
+        .hero-content {
+            max-width: 60%;
+        }
+
+        .hero-badge {
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.2), rgba(16, 185, 129, 0.2));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-content h2 {
+            font-family: var(--font-title);
+            font-weight: 800;
+            font-size: 2rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .hero-content p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            border: none;
+            padding: 0.85rem 1.75rem;
+            border-radius: 12px;
+            font-family: var(--font-body);
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.35);
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(79, 70, 229, 0.45);
+        }
+
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pulse-circle {
+            width: 150px;
+            height: 150px;
+            border: 2px dashed rgba(79, 70, 229, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: rotateCircle 20s linear infinite;
+        }
+
+        .pulse-inner {
+            width: 110px;
+            height: 110px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 50%;
+            background: rgba(31, 41, 55, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseBg 3s ease-in-out infinite alternate;
+        }
+
+        .pulse-inner i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes rotateCircle {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulseBg {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.3); }
+            100% { transform: scale(1.05); box-shadow: 0 0 25px 8px rgba(79, 70, 229, 0.1); }
+        }
+
+        /* Content Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(79, 70, 229, 0.25);
+            background: rgba(31, 41, 55, 0.65);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-light);
+            font-size: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-card h3 {
+            font-family: var(--font-title);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #fff;
+        }
+
+        .info-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Documentation General Layout */
+        .doc-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2.5rem;
+        }
+
+        .doc-body h2 {
+            font-family: var(--font-title);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .doc-body p {
+            margin-bottom: 1.25rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .highlight-box {
+            background: rgba(79, 70, 229, 0.05);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem 1.75rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+            color: #d1d5db;
+            font-style: italic;
+        }
+
+        /* Step List Styling */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1.25rem;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-family: var(--font-title);
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .step-text h4 {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-text p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Code Block Styling */
+        pre {
+            background: #080b12 !important;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        /* Team Section Styling */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .team-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.25rem 1.75rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .team-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(31, 41, 55, 0.6);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .avatar-container {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .team-card:hover .avatar-container {
+            transform: scale(1.05);
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .avatar-container i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--text-main), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .member-name {
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 0.35rem;
+        }
+
+        .member-role {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--secondary);
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+
+        .member-tasks {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .member-tasks li {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .member-tasks li i {
+            font-size: 0.75rem;
+            color: var(--primary-light);
+        }
+
+        /* Sidebar Toc Widget */
+        .toc-widget {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.75rem;
+            position: sticky;
+            top: 2rem;
+            height: fit-content;
+        }
+
+        .toc-widget h3 {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: #fff;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toc-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toc-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .toc-link:hover {
+            color: var(--primary-light);
+            transform: translateX(3px);
+        }
+
+        .toc-link i {
+            font-size: 0.75rem;
+        }
+
+        /* Flow Visuals in Workflow Tab */
+        .flow-container {
+            background: rgba(8, 11, 18, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 2rem;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .flow-step-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .flow-step-card:hover {
+            border-color: rgba(79, 70, 229, 0.2);
+            background: rgba(31, 41, 55, 0.55);
+        }
+
+        .flow-badge {
+            width: 40px;
+            height: 40px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--secondary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .flow-desc h4 {
+            font-family: var(--font-title);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-desc p {
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            aside.sidebar {
+                width: 80px;
+                padding: 2.5rem 0.75rem;
+                align-items: center;
+            }
+
+            .logo-text, .logo-subtitle, .sidebar-footer, .nav-item span {
+                display: none;
+            }
+
+            .logo-area {
+                justify-content: center;
+                margin-bottom: 2.5rem;
+            }
+
+            .nav-item button {
+                justify-content: center;
+                padding: 0.85rem;
+            }
+
+            main.main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                padding: 2rem 2.5rem;
+            }
+
+            .doc-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-widget {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-banner {
+                flex-direction: column;
+                gap: 2rem;
+                padding: 2rem;
+                text-align: center;
+            }
+
+            .hero-content {
+                max-width: 100%;
+            }
+
+            .info-grid, .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Ambient Glows -->
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <div class="app-container">
+
+        <!-- Navigation Sidebar -->
+        <aside class="sidebar">
+            <a href="#" class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-face-smile-beam"></i>
+                </div>
+                <div>
+                    <span class="logo-text">FACE_ABSENSII</span>
+                    <span class="logo-subtitle">Documentation</span>
+                </div>
+            </a>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" data-section="overview">
+                    <button>
+                        <i class="fa-solid fa-compass"></i>
+                        <span>Overview</span>
+                    </button>
+                </li>
+                <li class="nav-item" data-section="installation">
+                    <button>
+                        <i class="fa-solid fa-terminal"></i>
+                        <span>Instalasi & Setup</span>
+                    </button>
+                </li>
+                <li class="nav-item" data-section="workflow">
+                    <button>
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <span>Alur Kerja (Workflow)</span>
+                    </button>
+                </li>
+                <li class="nav-item" data-section="sdlc">
+                    <button>
+                        <i class="fa-solid fa-code-pull-request"></i>
+                        <span>Desain & SDLC</span>
+                    </button>
+                </li>
+                <li class="nav-item" data-section="team">
+                    <button>
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>Tim Pengembang</span>
+                    </button>
+                </li>
+                <li class="nav-item" data-section="github-pages">
+                    <button>
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub Pages Setup</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <p>&copy; 2026 FACE_ABSENSII</p>
+                <p style="font-size: 0.7rem; margin-top: 4px;">v1.0.0 Stable</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Dynamic Header -->
+            <header class="top-header">
+                <div class="header-title-wrapper">
+                    <h1 id="dynamic-title">Gambaran Umum Sistem</h1>
+                    <p id="dynamic-subtitle">Portal Dokumentasi Resmi Proyek Sistem Absensi Deteksi Wajah</p>
+                </div>
+                <div class="meta-info-badge">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Tugas Kelompok Terverifikasi</span>
+                </div>
+            </header>
+
+            <!-- SECTION: Overview -->
+            <section id="sect-overview" class="doc-section active">
+                <div class="hero-banner">
+                    <div class="hero-content">
+                        <span class="hero-badge">Teknologi Terkini</span>
+                        <h2>Absensi Lebih Cerdas & Cepat Dengan Wajah Anda</h2>
+                        <p>FACE_ABSENSII adalah solusi modern presensi kehadiran siswa menggunakan sistem kecerdasan buatan berbasis client-side face detection & recognition menggunakan Face-API.js dan database terintegrasi Supabase.</p>
+                        <button class="btn-primary" onclick="switchSection('installation')">
+                            Mulai Membaca <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="pulse-circle">
+                            <div class="pulse-inner">
+                                <i class="fa-solid fa-face-recognition-video"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <h3>Instan & Real-time</h3>
+                        <p>Pencatatan kehadiran dilakukan dalam milidetik setelah wajah terdeteksi dan terverifikasi.</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h3>Koneksi PostgreSQL</h3>
+                        <p>Integrasi database aman langsung dengan Supabase PostgreSQL melalui proteksi environment variables.</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="card-icon"><i class="fa-solid fa-circle-nodes"></i></div>
+                        <h3>Face-API.js Engine</h3>
+                        <p>Memproses pengenalan wajah langsung di browser tanpa perlu server GPU mahal di backend.</p>
+                    </div>
+                </div>
+
+                <div class="doc-layout">
+                    <div class="doc-body">
+                        <h2>Tujuan & Manfaat Proyek</h2>
+                        <p>Sistem ini dirancang untuk menggantikan proses absensi manual dengan teknologi pengenalan wajah. Proyek ini bertujuan mempercepat waktu pendataan kehadiran siswa di sekolah, mengurangi manipulasi data kehadiran (titip absen), serta mempermudah staf administratif dalam mengunduh laporan rekapitulasi berkala dalam bentuk Excel/PDF secara otomatis.</p>
+                        <div class="highlight-box">
+                            <p>"Meningkatkan akurasi kehadiran dengan integrasi biometric recognition real-time secara fleksibel, hemat biaya, dan aman."</p>
+                        </div>
+                    </div>
+                    <div class="toc-widget">
+                        <h3>Di Halaman Ini</h3>
+                        <ul class="toc-list">
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Fitur Utama</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Manfaat Sistem</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Target Pengguna</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Installation & Setup -->
+            <section id="sect-installation" class="doc-section">
+                <div class="doc-layout">
+                    <div class="doc-body">
+                        <h2>Langkah-langkah Instalasi Lokal</h2>
+                        <p>Ikuti panduan berikut untuk menduplikasi dan menjalankan proyek FACE_ABSENSII di komputer lokal Anda:</p>
+                        
+                        <div class="step-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-text">
+                                    <h4>Clone Repositori</h4>
+                                    <p>Clone proyek ini ke folder lokal web server Anda (misal: htdocs atau directory pilihan Anda):</p>
+                                    <pre><code>git clone https://github.com/[username]/sistem_absensi.git</code></pre>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-text">
+                                    <h4>Konfigurasi Environment Variables</h4>
+                                    <p>Duplikat file <code>.env.example</code> menjadi <code>.env</code> di root direktori, lalu sesuaikan konfigurasi database Supabase PostgreSQL Anda:</p>
+                                    <pre><code>DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
+DB_PORT=5432
+DB_USER=postgres.xxx
+DB_PASS=Password_Supabase_Anda
+DB_NAME=postgres</code></pre>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-text">
+                                    <h4>Jalankan Aplikasi</h4>
+                                    <p>Aktifkan Apache & MySQL server (misal lewat XAMPP) atau jalankan menggunakan server PHP lokal di root direktori:</p>
+                                    <pre><code>php -S localhost:8000</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toc-widget">
+                        <h3>Di Halaman Ini</h3>
+                        <ul class="toc-list">
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Git Clone</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Konfigurasi Env</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Server PHP Lokal</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Workflow -->
+            <section id="sect-workflow" class="doc-section">
+                <div class="doc-layout">
+                    <div class="doc-body">
+                        <h2>Alur Kerja Sistem (System Workflow)</h2>
+                        <p>Berikut adalah visualisasi alur bagaimana data wajah dipindai, dianalisis, dan dicatat sebagai kehadiran siswa:</p>
+                        
+                        <div class="flow-container">
+                            <div class="flow-step-card">
+                                <div class="flow-badge">1</div>
+                                <div class="flow-desc">
+                                    <h4>Deteksi Bounding Box Wajah</h4>
+                                    <p>Kamera webcam mendeteksi adanya objek wajah di layar secara dinamis menggunakan model Tiny Face Detector bawaan Face-API.js.</p>
+                                </div>
+                            </div>
+                            <div class="flow-step-card">
+                                <div class="flow-badge">2</div>
+                                <div class="flow-desc">
+                                    <h4>Pencocokan Deskriptor Biometrik</h4>
+                                    <p>Sistem mengekstrak landmark 68 titik wajah dan menghitung kecocokan jarak Euclidean dengan dataset foto yang terdaftar di database.</p>
+                                </div>
+                            </div>
+                            <div class="flow-step-card">
+                                <div class="flow-badge">3</div>
+                                <div class="flow-desc">
+                                    <h4>Logging Presensi & Rekap Otomatis</h4>
+                                    <p>Saat wajah cocok di bawah threshold (&le; 0.6), backend menyimpan data ID siswa, waktu kehadiran, dan status presensi (Tepat Waktu/Terlambat).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toc-widget">
+                        <h3>Di Halaman Ini</h3>
+                        <ul class="toc-list">
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Tiny Face Detector</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Euclidean Distance</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Logs Kehadiran</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: SDLC -->
+            <section id="sect-sdlc" class="doc-section">
+                <div class="doc-layout">
+                    <div class="doc-body">
+                        <h2>Siklus Pengembangan Proyek (SDLC)</h2>
+                        <p>Pengembangan Proyek FACE_ABSENSII ini mengikuti metodologi terstruktur yang memastikan kualitas fungsionalitas dan keamanan:</p>
+                        
+                        <div class="highlight-box">
+                            <p><strong>1. Perencanaan & Analisis:</strong> Menentukan arsitektur web client-side untuk meminimalkan beban komputasi server backend, memilih Supabase PostgreSQL.</p>
+                        </div>
+                        <div class="highlight-box">
+                            <p><strong>2. Perancangan Database:</strong> Pembuatan skema tabel yang optimal untuk relasi siswa, kelas, admin, dan riwayat presensi harian.</p>
+                        </div>
+                        <div class="highlight-box">
+                            <p><strong>3. Pengembangan & Integrasi:</strong> Kolaborasi erat menggunakan Git/GitHub untuk menggabungkan modul Autentikasi, CRUD, Dashboard, Engine Face-API, dan Laporan Ekspor.</p>
+                        </div>
+                    </div>
+                    <div class="toc-widget">
+                        <h3>Di Halaman Ini</h3>
+                        <ul class="toc-list">
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Perencanaan</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Desain Skema</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Siklus Integrasi</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Team -->
+            <section id="sect-team" class="doc-section">
+                <h2>Anggota Kelompok & Pembagian Tugas</h2>
+                <p style="margin-bottom: 2rem; color: var(--text-muted);">Kolaborasi aktif tim untuk membangun platform absensi berbasis wajah yang andal:</p>
+                
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="avatar-container"><i class="fa-solid fa-database"></i></div>
+                        <div class="member-name">Aldi</div>
+                        <div class="member-role">DB & API Security</div>
+                        <ul class="member-tasks">
+                            <li><i class="fa-solid fa-circle-check"></i> Supabase Integration</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Env Variable Config</li>
+                            <li><i class="fa-solid fa-circle-check"></i> DB Credentials Security</li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar-container"><i class="fa-solid fa-user-shield"></i></div>
+                        <div class="member-name">Desta</div>
+                        <div class="member-role">Auth System</div>
+                        <ul class="member-tasks">
+                            <li><i class="fa-solid fa-circle-check"></i> Admin Registration</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Secure Login System</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Session Management</li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar-container"><i class="fa-solid fa-folder-open"></i></div>
+                        <div class="member-name">Dwi</div>
+                        <div class="member-role">CRUD Siswa & Kelas</div>
+                        <ul class="member-tasks">
+                            <li><i class="fa-solid fa-circle-check"></i> Class Management</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Student Profiles</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Dataset Photo Upload</li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar-container"><i class="fa-solid fa-camera-retro"></i></div>
+                        <div class="member-name">Fiis</div>
+                        <div class="member-role">Face Recognition</div>
+                        <ul class="member-tasks">
+                            <li><i class="fa-solid fa-circle-check"></i> Face-API.js Loading</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Live Webcam Feed</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Real-time Verification</li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar-container"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="member-name">Veve</div>
+                        <div class="member-role">Dashboard UI</div>
+                        <ul class="member-tasks">
+                            <li><i class="fa-solid fa-circle-check"></i> Modern Dark Mode</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Real-time Logs Feed</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Chart.js Visualization</li>
+                        </ul>
+                    </div>
+                    <div class="team-card">
+                        <div class="avatar-container"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="member-name">Hasbi</div>
+                        <div class="member-role">Reporting & Export</div>
+                        <ul class="member-tasks">
+                            <li><i class="fa-solid fa-circle-check"></i> Excel CSV Export</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Attendance Filters</li>
+                            <li><i class="fa-solid fa-circle-check"></i> PDF Print Generator</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: GitHub Pages Setup -->
+            <section id="sect-github-pages" class="doc-section">
+                <div class="doc-layout">
+                    <div class="doc-body">
+                        <h2>Panduan Mengaktifkan GitHub Pages</h2>
+                        <p>Setelah dokumen-dokumen di folder <code>docs/</code> di-push ke repositori GitHub, aktifkan halaman web agar bisa diakses oleh publik secara online:</p>
+                        
+                        <div class="step-list">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-text">
+                                    <h4>Buka Pengaturan Repositori</h4>
+                                    <p>Masuk ke repositori GitHub kelompok Anda, lalu klik tab <strong>Settings</strong> di menu navigasi atas.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-text">
+                                    <h4>Masuk ke Menu Pages</h4>
+                                    <p>Di sidebar sebelah kiri bagian bawah (di bawah menu "Code and automation"), klik menu <strong>Pages</strong>.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-text">
+                                    <h4>Tentukan Branch & Folder Source</h4>
+                                    <p>Pada bagian "Build and deployment", set source menjadi <strong>Deploy from a branch</strong>. Kemudian pilih branch <strong>main</strong> (atau branch utama Anda) dan pilih direktori <strong>/docs</strong>.</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-text">
+                                    <h4>Simpan & Verifikasi</h4>
+                                    <p>Klik tombol <strong>Save</strong>. Tunggu sekitar 1-2 menit hingga GitHub Actions selesai memproses build halaman Anda. Tautan URL aktif halaman dokumentasi Anda akan tertera pada bagian atas menu Pages tersebut.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toc-widget">
+                        <h3>Di Halaman Ini</h3>
+                        <ul class="toc-list">
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Settings Tab</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Pages Menu</a></li>
+                            <li><a href="#" class="toc-link"><i class="fa-solid fa-chevron-right"></i> Source Folder Setup</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JavaScript logic to handle tab switching and dynamic updates -->
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.doc-section');
+        const dynamicTitle = document.getElementById('dynamic-title');
+        const dynamicSubtitle = document.getElementById('dynamic-subtitle');
+
+        const sectionMetaData = {
+            'overview': {
+                title: 'Gambaran Umum Sistem',
+                subtitle: 'Portal Dokumentasi Resmi Proyek Sistem Absensi Deteksi Wajah'
+            },
+            'installation': {
+                title: 'Instalasi & Setup Lokal',
+                subtitle: 'Panduan menginstalasi web server, konfigurasi Supabase, dan testing lokal'
+            },
+            'workflow': {
+                title: 'Alur Kerja Sistem (Workflow)',
+                subtitle: 'Memahami cara kerja pengenalan wajah real-time pada database absensi'
+            },
+            'sdlc': {
+                title: 'Desain Sistem & Siklus Pengembangan',
+                subtitle: 'Dokumentasi detail fase perencanaan, arsitektur, dan integrasi modul'
+            },
+            'team': {
+                title: 'Tim Pengembang Proyek',
+                subtitle: 'Daftar penanggung jawab, spesialisasi, dan pembagian tugas pengembangan'
+            },
+            'github-pages': {
+                title: 'Konfigurasi GitHub Pages',
+                subtitle: 'Langkah mempublikasikan portal dokumentasi ini secara publik'
+            }
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetSection = item.getAttribute('data-section');
+                switchSection(targetSection);
+            });
+        });
+
+        function switchSection(sectionId) {
+            // Update active state in Navigation
+            navItems.forEach(nav => {
+                if (nav.getAttribute('data-section') === sectionId) {
+                    nav.classList.add('active');
+                } else {
+                    nav.classList.remove('active');
+                }
+            });
+
+            // Update active state in Sections
+            sections.forEach(sec => {
+                if (sec.id === `sect-${sectionId}`) {
+                    sec.classList.add('active');
+                } else {
+                    sec.classList.remove('sec', 'active');
+                }
+            });
+
+            // Update Header Text with micro-animation
+            if (sectionMetaData[sectionId]) {
+                dynamicTitle.style.opacity = 0;
+                dynamicSubtitle.style.opacity = 0;
+                
+                setTimeout(() => {
+                    dynamicTitle.textContent = sectionMetaData[sectionId].title;
+                    dynamicSubtitle.textContent = sectionMetaData[sectionId].subtitle;
+                    dynamicTitle.style.opacity = 1;
+                    dynamicSubtitle.style.opacity = 1;
+                }, 150);
+            }
+
+            // Scroll content to top smooth
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Apply smooth transition effects to headers
+        dynamicTitle.style.transition = 'opacity 0.25s ease';
+        dynamicSubtitle.style.transition = 'opacity 0.25s ease';
+    </script>
+</body>
+</html>
