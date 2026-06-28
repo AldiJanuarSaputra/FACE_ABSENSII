@@ -1,26 +1,7 @@
 {
   "functions": {
-    "*.php": { "runtime": "vercel-php@0.6.0" },
-    "api/**/*.php": { "runtime": "vercel-php@0.6.0" },
-    "aldi/**/*.php": { "runtime": "vercel-php@0.6.0" },
-    "desta/**/*.php": { "runtime": "vercel-php@0.6.0" },
-    "dwi/**/*.php": { "runtime": "vercel-php@0.6.0" },
-    "fiis/**/*.php": { "runtime": "vercel-php@0.6.0" },
-    "hasbi/**/*.php": { "runtime": "vercel-php@0.6.0" },
-    "veve/**/*.php": { "runtime": "vercel-php@0.6.0" }
-  },
-  "routes": [
-    {
-      "src": "/(.*\\.php)",
-      "dest": "/$1"
-    },
-    {
-      "src": "/docs/(.*)",
-      "dest": "/docs/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/index.php"
+    "**/*.php": {
+      "runtime": "vercel-php@0.7.1"
     }
-  ]
+  }
 }
